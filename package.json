@@ -7,12 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "migrate": "drizzle-kit migrate",
-    "generate": "drizzle-kit generate:types",
+    "generate": "drizzle-kit generate",
     "studio": "drizzle-kit studio"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "decimal.js": "^10.6.0",
     "drizzle-orm": "^0.45.2",
     "next": "16.3.5",
     "pg": "^8.23.0",
@@ -26,11 +28,14 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.1"
   },
   "packageManager": "pnpm@10.34.5"
 }

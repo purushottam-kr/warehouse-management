@@ -1,0 +1,379 @@
+import "server-only";
+
+import {
+  and,
+  asc,
+  eq,
+  sql,
+} from "drizzle-orm";
+
+import { db } from "@/db";
+import {
+  allocations,
+  storageSpaces,
+  warehouses,
+} from "@/db/schema";
+
+type DbTransaction = Parameters<
+  Parameters<typeof db.transaction>[0]
+>[0];
+
+export const createAllocationRepository = (
+  database: typeof db = db,
+) => {
+  const findByItemAndStorageSpace = async (
+    itemId: string,
+    storageSpaceId: string,
+    transaction?: DbTransaction,
+  ) => {
+    const executor = transaction ?? database;
+
+    const [allocation] = await executor
+      .select()
+      .from(allocations)
+      .where(
+        and(
+          eq(allocations.itemId, itemId),
+          eq(
+            allocations.storageSpaceId,
+            storageSpaceId,
+          ),
+        ),
+      )
+      .limit(1);
+
+    return allocation ?? null;
+  };
+
+  const getAllocatedQuantityForStorageSpace =
+    async (
+      storageSpaceId: string,
+      transaction?: DbTransaction,
+    ) => {
+      const executor = transaction ?? database;
+
+      const [result] = await executor
+        .select({
+          total: sql<string>`
+            COALESCE(
+              SUM(${allocations.quantity}),
+              0
+            )
+          `,
+        })
+        .from(allocations)
+        .where(
+          eq(
+            allocations.storageSpaceId,
+            storageSpaceId,
+          ),
+        );
+
+      return result.total;
+    };
+
+  const getAllocatedQuantityForItem =
+    async (
+      itemId: string,
+      transaction?: DbTransaction,
+    ) => {
+      const executor = transaction ?? database;
+
+      const [result] = await executor
+        .select({
+          total: sql<string>`
+            COALESCE(
+              SUM(${allocations.quantity}),
+              0
+            )
+          `,
+        })
+        .from(allocations)
+        .where(eq(allocations.itemId, itemId));
+
+      return result.total;
+    };
+
+  /*
+   * Candidate discovery only.
+   *
+   * This result is NOT authoritative for capacity.
+   * The final capacity check happens after the relevant
+   * rows have been locked inside the transaction.
+   */
+  const findEligibleStorageSpaces = async (
+    requiredStorageType: string | null,
+  ) => {
+    const allocatedQuantity = sql<string>`
+      COALESCE(
+        SUM(${allocations.quantity}),
+        0
+      )
+    `;
+
+    const availableCapacity = sql<string>`
+      ${storageSpaces.capacity}
+      -
+      COALESCE(
+        SUM(${allocations.quantity}),
+        0
+      )
+    `;
+
+    /*
+     * Aggregate conditions must live in HAVING, not WHERE.
+     * WHERE is evaluated before grouping, so SUM(...) is
+     * not available there.
+     */
+    const conditions = [
+      eq(storageSpaces.status, "ACTIVE"),
+      eq(warehouses.status, "ACTIVE"),
+      sql`${warehouses.deletedAt} IS NULL`,
+    ];
+
+    if (requiredStorageType !== null) {
+      conditions.push(
+        eq(
+          storageSpaces.storageType,
+          requiredStorageType,
+        ),
+      );
+    }
+
+    return database
+      .select({
+        storageSpaceId: storageSpaces.id,
+        warehouseId: storageSpaces.warehouseId,
+        capacity: storageSpaces.capacity,
+        allocatedQuantity,
+        availableCapacity,
+        storageType: storageSpaces.storageType,
+      })
+      .from(storageSpaces)
+      .innerJoin(
+        warehouses,
+        eq(
+          storageSpaces.warehouseId,
+          warehouses.id,
+        ),
+      )
+      .leftJoin(
+        allocations,
+        eq(
+          allocations.storageSpaceId,
+          storageSpaces.id,
+        ),
+      )
+      .where(and(...conditions))
+      .groupBy(
+        storageSpaces.id,
+        storageSpaces.warehouseId,
+        storageSpaces.capacity,
+        storageSpaces.storageType,
+      )
+      .having(
+        sql`${availableCapacity} > 0`,
+      )
+      .orderBy(
+        asc(storageSpaces.warehouseId),
+        asc(storageSpaces.id),
+      );
+  };
+
+  /*
+   * Lock warehouses first.
+   *
+   * This prevents a concurrent warehouse status change from
+   * happening while we are deciding whether inventory can be
+   * received there.
+   */
+  const lockWarehouses = async (
+    warehouseIds: string[],
+    transaction: DbTransaction,
+  ) => {
+    if (warehouseIds.length === 0) {
+      return [];
+    }
+
+    return transaction
+      .select({
+        id: warehouses.id,
+        status: warehouses.status,
+        deletedAt: warehouses.deletedAt,
+      })
+      .from(warehouses)
+      .where(
+        sql`${warehouses.id} IN (${sql.join(
+          warehouseIds.map(
+            (id) => sql`${id}`,
+          ),
+          sql`, `,
+        )})`,
+      )
+      .orderBy(asc(warehouses.id))
+      .for("update");
+  };
+
+  /*
+   * Lock storage spaces in deterministic ID order.
+   *
+   * Every allocation transaction should use the same ordering
+   * to reduce deadlock risk.
+   */
+  const lockStorageSpaces = async (
+    storageSpaceIds: string[],
+    transaction: DbTransaction,
+  ) => {
+    if (storageSpaceIds.length === 0) {
+      return [];
+    }
+
+    return transaction
+      .select({
+        id: storageSpaces.id,
+        warehouseId: storageSpaces.warehouseId,
+        capacity: storageSpaces.capacity,
+        storageType: storageSpaces.storageType,
+        status: storageSpaces.status,
+      })
+      .from(storageSpaces)
+      .where(
+        sql`${storageSpaces.id} IN (${sql.join(
+          storageSpaceIds.map(
+            (id) => sql`${id}`,
+          ),
+          sql`, `,
+        )})`,
+      )
+      .orderBy(asc(storageSpaces.id))
+      .for("update");
+  };
+
+  const getAllocatedQuantitiesForStorageSpaces =
+    async (
+      storageSpaceIds: string[],
+      transaction: DbTransaction,
+    ) => {
+      if (storageSpaceIds.length === 0) {
+        return new Map<string, string>();
+      }
+
+      const rows = await transaction
+        .select({
+          storageSpaceId:
+            allocations.storageSpaceId,
+          total: sql<string>`
+            COALESCE(
+              SUM(${allocations.quantity}),
+              0
+            )
+          `,
+        })
+        .from(allocations)
+        .where(
+          sql`${allocations.storageSpaceId} IN (${sql.join(
+            storageSpaceIds.map(
+              (id) => sql`${id}`,
+            ),
+            sql`, `,
+          )})`,
+        )
+        .groupBy(
+          allocations.storageSpaceId,
+        );
+
+      return new Map(
+        rows.map((row) => [
+          row.storageSpaceId,
+          row.total,
+        ]),
+      );
+    };
+
+  const create = async (
+    itemId: string,
+    storageSpaceId: string,
+    quantity: string,
+    transaction: DbTransaction,
+  ) => {
+    const [allocation] = await transaction
+      .insert(allocations)
+      .values({
+        itemId,
+        storageSpaceId,
+        quantity,
+      })
+      .returning();
+
+    return allocation;
+  };
+
+  const updateQuantity = async (
+    id: string,
+    quantity: string,
+    transaction: DbTransaction,
+  ) => {
+    const [allocation] = await transaction
+      .update(allocations)
+      .set({
+        quantity,
+        updatedAt: new Date(),
+      })
+      .where(eq(allocations.id, id))
+      .returning();
+
+    return allocation ?? null;
+  };
+
+  const remove = async (
+  id: string,
+  transaction: DbTransaction,
+) => {
+  const [allocation] = await transaction
+    .delete(allocations)
+    .where(eq(allocations.id, id))
+    .returning();
+
+  return allocation ?? null;
+};
+
+const getAllocatedQuantityForWarehouse = async (
+  warehouseId: string,
+  transaction?: DbTransaction,
+) => {
+  const executor = transaction ?? database;
+
+  const [result] = await executor
+    .select({
+      total: sql<string>`COALESCE(SUM(${allocations.quantity}), 0)`,
+    })
+    .from(allocations)
+    .innerJoin(
+      storageSpaces,
+      eq(
+        allocations.storageSpaceId,
+        storageSpaces.id,
+      ),
+    )
+    .where(
+      eq(storageSpaces.warehouseId, warehouseId),
+    );
+
+  return result.total;
+};
+
+
+  return {
+    getAllocatedQuantityForWarehouse,
+    findByItemAndStorageSpace,
+    getAllocatedQuantityForStorageSpace,
+    getAllocatedQuantityForItem,
+    findEligibleStorageSpaces,
+    lockWarehouses,
+    lockStorageSpaces,
+    getAllocatedQuantitiesForStorageSpaces,
+    create,
+    updateQuantity,
+    remove,
+  };
+};
