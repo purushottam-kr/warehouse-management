@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  ArrowDownToLine,
   ArrowLeft,
   ArrowRightLeft,
   ArrowUpRight,
@@ -307,7 +308,7 @@ const ItemDetailPage = () => {
             Storage locations
           </h2>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Link
               href={`/allocations?itemId=${item.id}`}
               className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white transition hover:bg-neutral-800"
@@ -322,6 +323,14 @@ const ItemDetailPage = () => {
             >
               <ArrowRightLeft className="h-4 w-4" />
               Transfer inventory
+            </Link>
+
+            <Link
+              href={`/releases?itemId=${item.id}`}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+            >
+              <ArrowDownToLine className="h-4 w-4" />
+              Release inventory
             </Link>
           </div>
         </div>

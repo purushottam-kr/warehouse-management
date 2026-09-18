@@ -4,6 +4,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   Package,
+  PackageOpen,
   Settings,
   Warehouse,
 } from "lucide-react";
@@ -55,6 +56,11 @@ export const navigation: NavigationSection[] = [
         label: "Transfer",
         href: "/transfers",
         icon: ArrowLeftRight,
+      },
+      {
+        label: "Release",
+        href: "/releases",
+        icon: PackageOpen,
       },
     ],
   },
