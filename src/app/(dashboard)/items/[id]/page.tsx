@@ -3,12 +3,13 @@
 import Link from "next/link";
 import {
   ArrowLeft,
-  Boxes,
+  ArrowRightLeft,
+  ArrowUpRight,
   MapPin,
   Pencil,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import type { ItemAllocationSummary } from "@/types/allocation";
 
@@ -38,8 +39,6 @@ type ApiErrorResponse = {
   };
 };
 
-const QUANTITY_PATTERN = /^\d+(\.\d{1,3})?$/;
-
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
     minimumFractionDigits: 3,
@@ -55,7 +54,6 @@ const formatDate = (value: string) =>
 
 const ItemDetailPage = () => {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
 
   const [item, setItem] = useState<Item | null>(null);
   const [summary, setSummary] =
@@ -64,14 +62,6 @@ const ItemDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [inventoryError, setInventoryError] =
-    useState("");
-
-  const [isAllocateOpen, setIsAllocateOpen] =
-    useState(false);
-  const [quantity, setQuantity] = useState("");
-  const [isAllocating, setIsAllocating] =
-    useState(false);
-  const [allocateError, setAllocateError] =
     useState("");
 
   const loadSummary = async () => {
@@ -164,79 +154,6 @@ const ItemDetailPage = () => {
     void loadItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
-
-  const handleAllocate = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault();
-
-    setAllocateError("");
-
-    const trimmedQuantity = quantity.trim();
-
-    if (
-      !QUANTITY_PATTERN.test(trimmedQuantity) ||
-      Number(trimmedQuantity) <= 0
-    ) {
-      setAllocateError(
-        "Quantity must be a positive decimal with up to 3 decimal places.",
-      );
-      return;
-    }
-
-    setIsAllocating(true);
-
-    try {
-      const response = await fetch(
-        "/api/allocations",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            itemId: params.id,
-            quantity: trimmedQuantity,
-          }),
-        },
-      );
-
-      const data = (await response.json()) as
-        | {
-            itemId: string;
-            requestedQuantity: string;
-            allocations: Array<{
-              storageSpaceId: string;
-              quantity: string;
-            }>;
-          }
-        | ApiErrorResponse;
-
-      if (!response.ok) {
-        throw new Error(
-          "error" in data
-            ? data.error?.message ??
-                "Unable to allocate inventory."
-            : "Unable to allocate inventory.",
-        );
-      }
-
-      setIsAllocateOpen(false);
-      setQuantity("");
-      setAllocateError("");
-
-      await loadSummary();
-      router.refresh();
-    } catch (error) {
-      setAllocateError(
-        error instanceof Error
-          ? error.message
-          : "Unable to allocate inventory.",
-      );
-    } finally {
-      setIsAllocating(false);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -390,17 +307,23 @@ const ItemDetailPage = () => {
             Storage locations
           </h2>
 
-          <button
-            type="button"
-            onClick={() => {
-              setAllocateError("");
-              setIsAllocateOpen(true);
-            }}
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white transition hover:bg-neutral-800"
-          >
-            <Boxes className="h-4 w-4" />
-            Allocate inventory
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/allocations?itemId=${item.id}`}
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white transition hover:bg-neutral-800"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+              Allocate inventory
+            </Link>
+
+            <Link
+              href={`/transfers?itemId=${item.id}`}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+            >
+              <ArrowRightLeft className="h-4 w-4" />
+              Transfer inventory
+            </Link>
+          </div>
         </div>
 
         {inventoryError ? (
@@ -545,104 +468,6 @@ const ItemDetailPage = () => {
           </div>
         </div>
       </section>
-
-      {isAllocateOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/50 p-4"
-          onClick={() => {
-            if (!isAllocating) {
-              setIsAllocateOpen(false);
-            }
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="allocate-dialog-title"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-            className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-xl"
-          >
-            <h3
-              id="allocate-dialog-title"
-              className="text-base font-semibold text-neutral-950"
-            >
-              Allocate inventory
-            </h3>
-
-            <p className="mt-1 text-sm text-neutral-500">
-              Enter the quantity of{" "}
-              <span className="font-medium text-neutral-950">
-                {item.name}
-              </span>{" "}
-              to allocate. Storage space is selected
-              automatically based on the required
-              storage type and available capacity.
-            </p>
-
-            <form
-              onSubmit={handleAllocate}
-              className="mt-5"
-            >
-              <div>
-                <label
-                  htmlFor="allocate-quantity"
-                  className="mb-2 block text-sm font-medium text-neutral-800"
-                >
-                  Quantity ({item.unit})
-                </label>
-
-                <input
-                  id="allocate-quantity"
-                  type="text"
-                  inputMode="decimal"
-                  value={quantity}
-                  onChange={(event) =>
-                    setQuantity(event.target.value)
-                  }
-                  autoFocus
-                  placeholder="100"
-                  disabled={isAllocating}
-                  className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-neutral-950 outline-none placeholder:font-sans placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
-                />
-              </div>
-
-              {allocateError ? (
-                <div
-                  role="alert"
-                  className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
-                >
-                  {allocateError}
-                </div>
-              ) : null}
-
-              <div className="mt-6 flex items-center justify-end gap-3 border-t border-neutral-100 pt-5">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setIsAllocateOpen(false)
-                  }
-                  disabled={isAllocating}
-                  className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isAllocating}
-                  className="inline-flex h-10 items-center rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isAllocating
-                    ? "Allocating..."
-                    : "Allocate inventory"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 };
