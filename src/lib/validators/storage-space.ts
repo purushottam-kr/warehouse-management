@@ -21,16 +21,16 @@ export const createStorageSpaceSchema = z.object({
     .max(50, "Storage space code must be 50 characters or less."),
 
   capacity: z
-    .string()
-    .trim()
-    .regex(
-      /^\d+(\.\d{1,3})?$/,
-      "Capacity must be a positive number with up to 3 decimal places.",
-    )
-    .refine(
-      (value) => Number(value) > 0,
-      "Capacity must be greater than zero.",
-    ),
+  .string()
+  .trim()
+  .regex(
+    /^\d{1,9}(\.\d{1,3})?$/,
+    "Capacity must be a valid decimal with up to 9 integer digits and 3 decimal places.",
+  )
+  .refine(
+    (value) => Number(value) > 0,
+    "Capacity must be greater than zero.",
+  ),
 
   storageType: z
     .string()

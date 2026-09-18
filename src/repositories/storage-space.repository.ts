@@ -1,7 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { storageSpaces } from "@/db/schema";
+import { storageSpaces, warehouses } from "@/db/schema";
 import type {
   CreateStorageSpaceInput,
   UpdateStorageSpaceInput,
@@ -62,11 +62,26 @@ export const createStorageSpaceRepository = () => {
   };
 
   const findMany = async () => {
-    return db
-      .select()
-      .from(storageSpaces)
-      .orderBy(desc(storageSpaces.createdAt));
-  };
+  return db
+    .select({
+      id: storageSpaces.id,
+      warehouseId: storageSpaces.warehouseId,
+      warehouseName: warehouses.name,
+      name: storageSpaces.name,
+      code: storageSpaces.code,
+      capacity: storageSpaces.capacity,
+      storageType: storageSpaces.storageType,
+      status: storageSpaces.status,
+      createdAt: storageSpaces.createdAt,
+      updatedAt: storageSpaces.updatedAt,
+    })
+    .from(storageSpaces)
+    .innerJoin(
+      warehouses,
+      eq(storageSpaces.warehouseId, warehouses.id),
+    )
+    .orderBy(asc(storageSpaces.name));
+};
 
   const update = async (
     id: string,

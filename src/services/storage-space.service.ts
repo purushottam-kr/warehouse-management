@@ -184,14 +184,21 @@ export const updateStorageSpace = async (
    * implemented during the allocation feature.
    */
   if (
-    input.capacity !== undefined &&
-    input.capacity !== existingSpace.capacity
-  ) {
+  input.capacity !== undefined &&
+  input.capacity !== existingSpace.capacity
+) {
+  const allocatedQuantity =
+    await allocationRepository.getAllocatedQuantityForStorageSpace(
+      existingSpace.id,
+    );
+
+  if (Number(input.capacity) < Number(allocatedQuantity)) {
     throw new ConflictError(
-      "CAPACITY_UPDATE_NOT_YET_SUPPORTED",
-      "Storage space capacity cannot be changed until inventory allocation checks are available.",
+      "CAPACITY_BELOW_ALLOCATED",
+      `Storage space capacity cannot be less than its allocated inventory (${allocatedQuantity}).`,
     );
   }
+}
 
   const updateData: UpdateStorageSpaceInput = {
     ...(input.name !== undefined && {
