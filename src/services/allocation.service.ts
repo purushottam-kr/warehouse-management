@@ -14,6 +14,7 @@ import { createItemRepository } from "@/repositories/item.repository";
 import type {
   AllocationResult,
   CreateAllocationInput,
+  ItemAllocationSummary,
 } from "@/types/allocation";
 
 const itemRepository =
@@ -24,6 +25,40 @@ const allocationRepository =
 
 const movementRepository =
   createInventoryMovementRepository();
+
+/*
+ * Read model for the item detail view.
+ *
+ * Total and per-location quantities are always derived from
+ * the allocations table — items never store a denormalized
+ * total_quantity.
+ */
+export const getItemAllocationSummary = async (
+  itemId: string,
+): Promise<ItemAllocationSummary> => {
+  const item =
+    await itemRepository.findById(itemId);
+
+  if (!item) {
+    throw new NotFoundError("Item not found.");
+  }
+
+  const [totalQuantity, locations] =
+    await Promise.all([
+      allocationRepository.getAllocatedQuantityForItem(
+        itemId,
+      ),
+      allocationRepository.getItemAllocationBreakdown(
+        itemId,
+      ),
+    ]);
+
+  return {
+    itemId,
+    totalQuantity,
+    locations,
+  };
+};
 
 export const allocateInventory = async (
   input: CreateAllocationInput,

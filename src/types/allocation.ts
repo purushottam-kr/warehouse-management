@@ -21,6 +21,22 @@ export type AllocationResult = {
   }>;
 };
 
+export type ItemAllocationLocation = {
+  storageSpaceId: string;
+  storageSpaceName: string;
+  storageSpaceCode: string;
+  storageType: string;
+  warehouseId: string;
+  warehouseName: string;
+  quantity: string;
+};
+
+export type ItemAllocationSummary = {
+  itemId: string;
+  totalQuantity: string;
+  locations: ItemAllocationLocation[];
+};
+
 export type ReleaseInventoryInput = {
   itemId: string;
   storageSpaceId: string;

@@ -181,6 +181,60 @@ export const createAllocationRepository = (
   };
 
   /*
+   * Per-item inventory breakdown.
+   *
+   * One row per storage space holding this item, with the
+   * summed allocation quantity as an exact decimal string.
+   */
+  const getItemAllocationBreakdown = async (
+    itemId: string,
+  ) => {
+    return database
+      .select({
+        storageSpaceId: storageSpaces.id,
+        storageSpaceName: storageSpaces.name,
+        storageSpaceCode: storageSpaces.code,
+        storageType: storageSpaces.storageType,
+        warehouseId: warehouses.id,
+        warehouseName: warehouses.name,
+        quantity: sql<string>`
+          COALESCE(
+            SUM(${allocations.quantity}),
+            0
+          )
+        `,
+      })
+      .from(allocations)
+      .innerJoin(
+        storageSpaces,
+        eq(
+          allocations.storageSpaceId,
+          storageSpaces.id,
+        ),
+      )
+      .innerJoin(
+        warehouses,
+        eq(
+          storageSpaces.warehouseId,
+          warehouses.id,
+        ),
+      )
+      .where(eq(allocations.itemId, itemId))
+      .groupBy(
+        storageSpaces.id,
+        storageSpaces.name,
+        storageSpaces.code,
+        storageSpaces.storageType,
+        warehouses.id,
+        warehouses.name,
+      )
+      .orderBy(
+        asc(storageSpaces.name),
+        asc(storageSpaces.id),
+      );
+  };
+
+  /*
    * Lock warehouses first.
    *
    * This prevents a concurrent warehouse status change from
@@ -368,6 +422,7 @@ const getAllocatedQuantityForWarehouse = async (
     findByItemAndStorageSpace,
     getAllocatedQuantityForStorageSpace,
     getAllocatedQuantityForItem,
+    getItemAllocationBreakdown,
     findEligibleStorageSpaces,
     lockWarehouses,
     lockStorageSpaces,
