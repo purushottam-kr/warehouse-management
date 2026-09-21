@@ -35,7 +35,7 @@ export const Header = ({ name, role }: HeaderProps) => {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-neutral-200 bg-white px-6">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-neutral-200 bg-white/95 backdrop-blur-xs px-6">
       <div>
         <p className="text-sm font-medium text-neutral-950">
           Warehouse Management

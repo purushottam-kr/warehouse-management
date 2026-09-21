@@ -83,13 +83,6 @@ describe("GET /api/inventory-movements (integration)", () => {
       storageTypeFor("H1"),
     );
 
-    spaceB = await seedStorageSpace(
-      warehouse.id,
-      "H1B",
-      "1000",
-      storageTypeFor("H1"),
-    );
-
     item = await seedItem(
       "H1",
       storageTypeFor("H1"),
@@ -98,6 +91,13 @@ describe("GET /api/inventory-movements (integration)", () => {
     // Builds a deterministic movement history:
     // ALLOCATE 100 -> A, MOVE 25 (A -> B), RELEASE 10 from B.
     await allocate(item.id, "100");
+
+    spaceB = await seedStorageSpace(
+      warehouse.id,
+      "H1B",
+      "1000",
+      storageTypeFor("H1"),
+    );
     await transfer(item.id, spaceA.id, spaceB.id, "25");
 
     const { status } = (await release(

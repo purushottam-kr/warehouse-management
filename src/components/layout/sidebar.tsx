@@ -15,7 +15,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-neutral-200 bg-white">
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-neutral-200 bg-white">
       <div className="flex h-16 items-center gap-3 border-b border-neutral-200 px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white">
           <Package className="h-4 w-4" />
