@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { listQueryBaseSchema } from "@/lib/validators/list-query";
+
 export const warehouseStatusSchema = z.enum([
   "ACTIVE",
   "INACTIVE",
@@ -56,4 +58,22 @@ export type CreateWarehouseInput = z.infer<
 
 export type UpdateWarehouseInput = z.infer<
   typeof updateWarehouseSchema
+>;
+
+export const listWarehousesQuerySchema =
+  listQueryBaseSchema.extend({
+    search: z
+      .string()
+      .trim()
+      .max(
+        100,
+        "Search must be 100 characters or fewer.",
+      )
+      .optional(),
+
+    status: warehouseStatusSchema.optional(),
+  });
+
+export type ListWarehousesQuerySchemaInput = z.infer<
+  typeof listWarehousesQuerySchema
 >;

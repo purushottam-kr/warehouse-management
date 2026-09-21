@@ -1,23 +1,49 @@
 import { NextRequest } from "next/server";
 
 import { errorResponse } from "@/lib/api/error-response";
+import { parseListQuery } from "@/lib/api/list-query";
 import { requireAuth } from "@/lib/auth/authorization";
+import {
+  createItemSchema,
+  listItemsQuerySchema,
+} from "@/lib/validators/item";
 import {
   createItem,
   listItems,
+  listItemsPage,
 } from "@/services/item.service";
-import { createItemSchema } from "@/lib/validators/item";
 
-export const GET = async (
-  _request: NextRequest,
-) => {
+export const GET = async (request: NextRequest) => {
   try {
     await requireAuth();
 
-    const items = await listItems();
+    const parsed = parseListQuery(
+      request,
+      listItemsQuerySchema,
+    );
+
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+
+    /*
+     * No query parameters: return the full unpaged
+     * list. Option dropdowns rely on this; list pages
+     * always send page/pageSize.
+     */
+    if (parsed.empty) {
+      const items = await listItems();
+
+      return Response.json({
+        data: items,
+      });
+    }
+
+    const page = await listItemsPage(parsed.query);
 
     return Response.json({
-      data: items,
+      data: page.items,
+      pagination: page.pagination,
     });
   } catch (error) {
     return errorResponse(error);

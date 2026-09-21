@@ -9,6 +9,8 @@ import { createItemRepository } from "@/repositories/item.repository";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
 import type {
   CreateItemInput,
+  ItemListPage,
+  ListItemQuery,
   UpdateItemInput,
 } from "@/types/item";
 import { normalizeStorageType } from "@/lib/inventory/storage-type";
@@ -98,6 +100,40 @@ export const getItemById = async (
 
 export const listItems = async () => {
   return itemRepository.findMany();
+};
+
+export const listItemsPage = async (
+  query: ListItemQuery,
+): Promise<ItemListPage> => {
+  const total = await itemRepository.countItems(query);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(total / query.pageSize),
+  );
+
+  /*
+   * Clamp the requested page into the valid range so
+   * stale page numbers degrade to the nearest valid
+   * page instead of an empty result.
+   */
+  const page = Math.min(query.page, totalPages);
+
+  const items = await itemRepository.findItems(
+    query,
+    query.pageSize,
+    (page - 1) * query.pageSize,
+  );
+
+  return {
+    items,
+    pagination: {
+      page,
+      pageSize: query.pageSize,
+      total,
+      totalPages,
+    },
+  };
 };
 
 export const updateItem = async (

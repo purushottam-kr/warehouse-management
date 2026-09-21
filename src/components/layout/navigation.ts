@@ -2,6 +2,7 @@ import {
   ArrowLeftRight,
   Boxes,
   ClipboardList,
+  History,
   LayoutDashboard,
   Package,
   PackageOpen,
@@ -61,6 +62,16 @@ export const navigation: NavigationSection[] = [
         label: "Release",
         href: "/releases",
         icon: PackageOpen,
+      },
+    ],
+  },
+  {
+    label: "History",
+    items: [
+      {
+        label: "Activity",
+        href: "/activity",
+        icon: History,
       },
     ],
   },

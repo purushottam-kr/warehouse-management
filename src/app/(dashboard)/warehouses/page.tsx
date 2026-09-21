@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Warehouse as WarehouseIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Plus,
+  Search,
+  Warehouse as WarehouseIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
-import type { Warehouse } from "@/types/warehouse";
+import type { ListPagination } from "@/types/pagination";
+import type { WarehouseListRow } from "@/types/warehouse";
 
 type WarehousesResponse = {
-  data: Warehouse[];
+  data: WarehouseListRow[];
+  pagination: ListPagination;
 };
 
 type ApiErrorResponse = {
@@ -16,18 +24,68 @@ type ApiErrorResponse = {
   };
 };
 
+const PAGE_SIZE = 25;
+
+const formatQuantity = (value: string) =>
+  Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  });
+
+const STATUS_BADGE_CLASS = {
+  ACTIVE:
+    "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700",
+  INACTIVE:
+    "inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600",
+} as const;
+
 const WarehousesPage = () => {
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+
+  const [warehouses, setWarehouses] = useState<
+    WarehouseListRow[]
+  >([]);
+  const [pagination, setPagination] =
+    useState<ListPagination | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const hasFilters =
+    searchInput.trim() !== "" || status !== "";
+
   useEffect(() => {
+    const controller = new AbortController();
+
     const loadWarehouses = async () => {
+      setIsLoading(true);
+      setError("");
+
       try {
-        const response = await fetch("/api/warehouses", {
-          method: "GET",
-          cache: "no-store",
-        });
+        const params = new URLSearchParams();
+
+        params.set("page", String(page));
+        params.set("pageSize", String(PAGE_SIZE));
+
+        const trimmedSearch = searchInput.trim();
+
+        if (trimmedSearch) {
+          params.set("search", trimmedSearch);
+        }
+
+        if (status) {
+          params.set("status", status);
+        }
+
+        const response = await fetch(
+          `/api/warehouses?${params.toString()}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          },
+        );
 
         const data = (await response.json()) as
           | WarehousesResponse
@@ -36,29 +94,69 @@ const WarehousesPage = () => {
         if (!response.ok) {
           throw new Error(
             "error" in data
-              ? data.error?.message ?? "Unable to load warehouses."
+              ? data.error?.message ??
+                  "Unable to load warehouses."
               : "Unable to load warehouses.",
           );
         }
 
         if (!("data" in data)) {
-          throw new Error("Invalid warehouse response.");
+          throw new Error(
+            "Invalid warehouse response.",
+          );
         }
 
         setWarehouses(data.data);
-      } catch (error) {
+        setPagination(data.pagination);
+      } catch (loadError) {
+        if (
+          loadError instanceof DOMException &&
+          loadError.name === "AbortError"
+        ) {
+          return;
+        }
+
         setError(
-          error instanceof Error
-            ? error.message
+          loadError instanceof Error
+            ? loadError.message
             : "Unable to load warehouses.",
         );
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    void loadWarehouses();
-  }, []);
+    const timer = setTimeout(
+      () => void loadWarehouses(),
+      searchInput ? 300 : 0,
+    );
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchInput, status, page]);
+
+  const changeFilter = (apply: () => void) => {
+    setPage(1);
+    apply();
+  };
+
+  const start =
+    pagination && pagination.total > 0
+      ? (pagination.page - 1) *
+          pagination.pageSize +
+        1
+      : 0;
+
+  const end = pagination
+    ? Math.min(
+        pagination.page * pagination.pageSize,
+        pagination.total,
+      )
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -91,6 +189,40 @@ const WarehousesPage = () => {
         </div>
       ) : null}
 
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative sm:max-w-xs sm:flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+
+          <input
+            type="search"
+            value={searchInput}
+            onChange={(event) =>
+              changeFilter(() =>
+                setSearchInput(event.target.value),
+              )
+            }
+            placeholder="Search by code or name"
+            aria-label="Search warehouses"
+            className="h-10 w-full rounded-lg border border-neutral-300 bg-white pl-9 pr-3 text-sm text-neutral-950 outline-none placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+          />
+        </div>
+
+        <select
+          value={status}
+          onChange={(event) =>
+            changeFilter(() =>
+              setStatus(event.target.value),
+            )
+          }
+          aria-label="Filter by status"
+          className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+        >
+          <option value="">All statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
         {isLoading ? (
           <div className="divide-y divide-neutral-100">
@@ -99,106 +231,211 @@ const WarehousesPage = () => {
                 key={index}
                 className="flex items-center gap-4 px-5 py-4"
               >
-                <div className="h-9 w-9 animate-pulse rounded-lg bg-neutral-100" />
+                <div className="h-4 w-24 animate-pulse rounded bg-neutral-100" />
 
                 <div className="flex-1 space-y-2">
                   <div className="h-4 w-40 animate-pulse rounded bg-neutral-100" />
-                  <div className="h-3 w-24 animate-pulse rounded bg-neutral-100" />
+                  <div className="h-3 w-32 animate-pulse rounded bg-neutral-100" />
                 </div>
 
                 <div className="h-6 w-16 animate-pulse rounded-full bg-neutral-100" />
+
+                <div className="h-4 w-14 animate-pulse rounded bg-neutral-100" />
               </div>
             ))}
           </div>
         ) : warehouses.length === 0 ? (
           <div className="flex min-h-80 flex-col items-center justify-center px-6 text-center">
             <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-neutral-100">
-              <WarehouseIcon className="h-5 w-5 text-neutral-500" />
+              {hasFilters ? (
+                <Search className="h-5 w-5 text-neutral-500" />
+              ) : (
+                <WarehouseIcon className="h-5 w-5 text-neutral-500" />
+              )}
             </div>
 
             <h2 className="mt-4 text-sm font-semibold text-neutral-950">
-              No warehouses yet
+              {hasFilters
+                ? "No warehouses match your filters"
+                : "No warehouses yet"}
             </h2>
 
             <p className="mt-1 max-w-sm text-sm text-neutral-500">
-              Create your first warehouse to start organizing
-              storage spaces and inventory.
+              {hasFilters
+                ? "Try adjusting the search or filters."
+                : "Create your first warehouse to start organizing storage spaces and inventory."}
             </p>
 
-            <Link
-              href="/warehouses/new"
-              className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white hover:bg-neutral-800"
-            >
-              <Plus className="h-4 w-4" />
-              Create warehouse
-            </Link>
+            {!hasFilters ? (
+              <Link
+                href="/warehouses/new"
+                className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white hover:bg-neutral-800"
+              >
+                <Plus className="h-4 w-4" />
+                Create warehouse
+              </Link>
+            ) : null}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px]">
-              <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50/70">
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
-                    Warehouse
-                  </th>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px]">
+                <thead>
+                  <tr className="border-b border-neutral-200 bg-neutral-50/70">
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                      Code
+                    </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
-                    Code
-                  </th>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                      Name
+                    </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
-                    Address
-                  </th>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                      Address
+                    </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
-                    Status
-                  </th>
-                </tr>
-              </thead>
+                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                      Status
+                    </th>
 
-              <tbody className="divide-y divide-neutral-100">
-                {warehouses.map((warehouse) => (
-                  <tr
-                    key={warehouse.id}
-                    className="transition hover:bg-neutral-50"
-                  >
-                    <td className="px-5 py-4">
-                      <Link
-                        href={`/warehouses/${warehouse.id}`}
-                        className="font-medium text-neutral-950 hover:underline"
-                      >
-                        {warehouse.name}
-                      </Link>
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <span className="font-mono text-sm text-neutral-600">
-                        {warehouse.code}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-4 text-sm text-neutral-600">
-                      {warehouse.address || "—"}
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <span
-                        className={
-                          warehouse.status === "ACTIVE"
-                            ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
-                            : "inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600"
-                        }
-                      >
-                        {warehouse.status === "ACTIVE"
-                          ? "Active"
-                          : "Inactive"}
-                      </span>
-                    </td>
+                    <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500">
+                      Capacity
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+
+                <tbody className="divide-y divide-neutral-100">
+                  {warehouses.map((warehouse) => {
+                    const total = Number(
+                      warehouse.totalCapacity,
+                    );
+                    const allocated = Number(
+                      warehouse.allocatedQuantity,
+                    );
+
+                    const utilization =
+                      total > 0
+                        ? Math.round(
+                            (allocated / total) *
+                              100,
+                          )
+                        : null;
+
+                    return (
+                      <tr
+                        key={warehouse.id}
+                        className="transition hover:bg-neutral-50"
+                      >
+                        <td className="px-5 py-4">
+                          <span className="font-mono text-sm text-neutral-600">
+                            {warehouse.code}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <Link
+                            href={`/warehouses/${warehouse.id}`}
+                            className="font-medium text-neutral-950 hover:underline"
+                          >
+                            {warehouse.name}
+                          </Link>
+                        </td>
+
+                        <td className="px-5 py-4 text-sm text-neutral-600">
+                          {warehouse.address || "—"}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <span
+                            className={
+                              STATUS_BADGE_CLASS[
+                                warehouse.status
+                              ]
+                            }
+                          >
+                            {warehouse.status ===
+                            "ACTIVE"
+                              ? "Active"
+                              : "Inactive"}
+                          </span>
+                        </td>
+
+                        <td
+                          className="px-5 py-4 text-right font-mono text-sm text-neutral-700"
+                          title={
+                            total > 0
+                              ? `${formatQuantity(
+                                  warehouse.allocatedQuantity,
+                                )} of ${formatQuantity(
+                                  warehouse.totalCapacity,
+                                )} allocated`
+                              : "No storage spaces configured"
+                          }
+                        >
+                          {utilization === null
+                            ? "—"
+                            : `${utilization}%`}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {pagination ? (
+              <div className="flex items-center justify-between gap-4 border-t border-neutral-200 px-5 py-3">
+                <p className="text-xs text-neutral-500">
+                  Showing {start}–{end} of{" "}
+                  {pagination.total}
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPage((current) =>
+                        Math.max(1, current - 1),
+                      )
+                    }
+                    disabled={
+                      pagination.page <= 1 || isLoading
+                    }
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-2.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Previous
+                  </button>
+
+                  <span className="text-xs text-neutral-600">
+                    Page {pagination.page} of{" "}
+                    {pagination.totalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPage((current) =>
+                        Math.min(
+                          pagination.totalPages,
+                          current + 1,
+                        ),
+                      )
+                    }
+                    disabled={
+                      pagination.page >=
+                        pagination.totalPages ||
+                      isLoading
+                    }
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-2.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </div>

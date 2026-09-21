@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Warehouse = {
   id: string;
   name: string;
   code: string;
   status: "ACTIVE" | "INACTIVE";
+  deletedAt?: string | null;
 };
 
 type WarehousesResponse = {
@@ -30,8 +31,11 @@ type CreateStorageSpaceResponse = {
 
 const CAPACITY_PATTERN = /^\d{1,9}(\.\d{1,3})?$/;
 
-const NewStorageSpacePage = () => {
+const NewStorageSpaceForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const warehouseParam = searchParams.get("warehouse") ?? "";
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true);
@@ -40,7 +44,7 @@ const NewStorageSpacePage = () => {
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [warehouseId, setWarehouseId] = useState("");
+  const [warehouseId, setWarehouseId] = useState(warehouseParam);
   const [storageType, setStorageType] = useState("");
   const [capacity, setCapacity] = useState("");
 
@@ -69,10 +73,40 @@ const NewStorageSpacePage = () => {
           throw new Error("Invalid warehouse response.");
         }
 
-        setWarehouses(
-          data.data.filter((warehouse) => warehouse.status === "ACTIVE"),
+        const activeWarehouses = data.data.filter(
+          (warehouse) => warehouse.status === "ACTIVE",
         );
+
+        if (
+          warehouseParam &&
+          !activeWarehouses.some(
+            (warehouse) => warehouse.id === warehouseParam,
+          )
+        ) {
+          const detailResponse = await fetch(
+            `/api/warehouses/${warehouseParam}`,
+            { cache: "no-store" },
+          );
+
+          const detailData = (await detailResponse.json()) as
+            | { data: Warehouse }
+            | ApiErrorResponse;
+
+          if (
+            detailResponse.ok &&
+            "data" in detailData &&
+            detailData.data.deletedAt == null
+          ) {
+            activeWarehouses.push(detailData.data);
+          } else {
+            setWarehouseId("");
+          }
+        }
+
+        setWarehouses(activeWarehouses);
       } catch (error) {
+        setWarehouseId("");
+
         setError(
           error instanceof Error
             ? error.message
@@ -84,7 +118,7 @@ const NewStorageSpacePage = () => {
     };
 
     void loadWarehouses();
-  }, []);
+  }, [warehouseParam]);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -161,7 +195,11 @@ const NewStorageSpacePage = () => {
         throw new Error("Invalid storage space response.");
       }
 
-      router.push(`/storage-spaces/${data.data.id}`);
+      router.push(
+        warehouseParam
+          ? `/warehouses/${warehouseParam}`
+          : `/storage-spaces/${data.data.id}`,
+      );
       router.refresh();
     } catch (error) {
       setError(
@@ -176,11 +214,11 @@ const NewStorageSpacePage = () => {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <Link
-        href="/storage-spaces"
+        href={warehouseParam ? `/warehouses/${warehouseParam}` : "/storage-spaces"}
         className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors hover:text-slate-950"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to storage spaces
+        {warehouseParam ? "Back to warehouse" : "Back to storage spaces"}
       </Link>
 
       <div>
@@ -333,7 +371,7 @@ const NewStorageSpacePage = () => {
 
         <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50/50 px-6 py-4">
           <Link
-            href="/storage-spaces"
+            href={warehouseParam ? `/warehouses/${warehouseParam}` : "/storage-spaces"}
             className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             Cancel
@@ -353,6 +391,20 @@ const NewStorageSpacePage = () => {
         </div>
       </form>
     </div>
+  );
+};
+
+const NewStorageSpacePage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-2xl">
+          <div className="h-8 w-48 animate-pulse rounded bg-slate-200" />
+        </div>
+      }
+    >
+      <NewStorageSpaceForm />
+    </Suspense>
   );
 };
 

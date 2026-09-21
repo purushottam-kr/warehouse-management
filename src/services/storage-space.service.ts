@@ -10,6 +10,8 @@ import { createStorageSpaceRepository } from "@/repositories/storage-space.repos
 import { createWarehouseRepository } from "@/repositories/warehouse.repository";
 import type {
   CreateStorageSpaceInput,
+  ListStorageSpacesQuery,
+  StorageSpaceListPage,
   UpdateStorageSpaceInput,
 } from "@/types/storage-space";
 import { normalizeStorageType } from "@/lib/inventory/storage-type";
@@ -123,6 +125,44 @@ export const listStorageSpacesByWarehouse = async (
 
 export const listStorageSpaces = async () => {
   return storageSpaceRepository.findMany();
+};
+
+export const listStorageSpacesPage = async (
+  query: ListStorageSpacesQuery,
+): Promise<StorageSpaceListPage> => {
+  const total =
+    await storageSpaceRepository.countStorageSpaces(
+      query,
+    );
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(total / query.pageSize),
+  );
+
+  /*
+   * Clamp the requested page into the valid range so
+   * stale page numbers degrade to the nearest valid
+   * page instead of an empty result.
+   */
+  const page = Math.min(query.page, totalPages);
+
+  const storageSpaces =
+    await storageSpaceRepository.findStorageSpaces(
+      query,
+      query.pageSize,
+      (page - 1) * query.pageSize,
+    );
+
+  return {
+    storageSpaces,
+    pagination: {
+      page,
+      pageSize: query.pageSize,
+      total,
+      totalPages,
+    },
+  };
 };
 
 export const updateStorageSpace = async (

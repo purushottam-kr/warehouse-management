@@ -79,8 +79,12 @@ export type TestUser = {
   email: string;
 };
 
-export const seedUser = async (): Promise<TestUser> => {
-  const email = `staff-${RUN_ID.toLowerCase()}@test.local`;
+export const seedUser = async (
+  key?: string,
+): Promise<TestUser> => {
+  const email = `staff-${RUN_ID.toLowerCase()}${
+    key ? `-${key}` : ""
+  }@test.local`;
 
   await request("POST", "/api/auth/register", {
     email,
@@ -218,6 +222,7 @@ export const setStorageSpaceStatus = async (
 
 export type TestItem = {
   id: string;
+  sku: string;
   requiredStorageType: string | null;
 };
 
@@ -315,6 +320,35 @@ export const transfer = async (
     itemId,
     fromStorageSpaceId,
     toStorageSpaceId,
+    quantity,
+  });
+};
+
+export type ReleaseResponseBody = {
+  data: {
+    itemId: string;
+    storageSpaceId: string;
+    releasedQuantity: string;
+  };
+};
+
+export type ReleaseErrorBody = {
+  error: {
+    code: string;
+    message: string;
+  };
+};
+
+export const release = async (
+  itemId: string,
+  storageSpaceId: string,
+  quantity: string,
+): Promise<ApiResult<
+  ReleaseResponseBody | ReleaseErrorBody
+>> => {
+  return request("POST", "/api/releases", {
+    itemId,
+    storageSpaceId,
     quantity,
   });
 };

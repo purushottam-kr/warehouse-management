@@ -7,7 +7,9 @@ import {
 import { isPostgresUniqueViolation } from "@/lib/errors/database";
 import type {
   CreateWarehouseInput,
+  ListWarehousesQuery,
   UpdateWarehouseInput,
+  WarehouseListPage,
 } from "@/types/warehouse";
 import { createWarehouseRepository } from "@/repositories/warehouse.repository";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
@@ -67,6 +69,43 @@ export const getWarehouseById = async (id: string) => {
 
 export const listWarehouses = async () => {
   return warehouseRepository.findMany();
+};
+
+export const listWarehousesPage = async (
+  query: ListWarehousesQuery,
+): Promise<WarehouseListPage> => {
+  const total = await warehouseRepository.countWarehouses(
+    query,
+  );
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(total / query.pageSize),
+  );
+
+  /*
+   * Clamp the requested page into the valid range so
+   * stale page numbers degrade to the nearest valid
+   * page instead of an empty result.
+   */
+  const page = Math.min(query.page, totalPages);
+
+  const warehouses =
+    await warehouseRepository.findWarehouses(
+      query,
+      query.pageSize,
+      (page - 1) * query.pageSize,
+    );
+
+  return {
+    warehouses,
+    pagination: {
+      page,
+      pageSize: query.pageSize,
+      total,
+      totalPages,
+    },
+  };
 };
 
 export const updateWarehouse = async (

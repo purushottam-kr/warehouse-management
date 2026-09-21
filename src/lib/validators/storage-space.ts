@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { listQueryBaseSchema } from "@/lib/validators/list-query";
+
 export const storageSpaceStatusSchema = z.enum([
   "ACTIVE",
   "INACTIVE",
@@ -83,4 +85,36 @@ export type CreateStorageSpaceSchemaInput = z.infer<
 
 export type UpdateStorageSpaceSchemaInput = z.infer<
   typeof updateStorageSpaceSchema
+>;
+
+export const listStorageSpacesQuerySchema =
+  listQueryBaseSchema.extend({
+    search: z
+      .string()
+      .trim()
+      .max(
+        100,
+        "Search must be 100 characters or fewer.",
+      )
+      .optional(),
+
+    warehouseId: z
+      .string()
+      .uuid("Invalid warehouse ID.")
+      .optional(),
+
+    storageType: z
+      .string()
+      .trim()
+      .max(
+        50,
+        "Storage type must be 50 characters or fewer.",
+      )
+      .optional(),
+
+    status: storageSpaceStatusSchema.optional(),
+  });
+
+export type ListStorageSpacesQuerySchemaInput = z.infer<
+  typeof listStorageSpacesQuerySchema
 >;

@@ -2,20 +2,48 @@ import { NextRequest } from "next/server";
 
 import { requireAuth } from "@/lib/auth/authorization";
 import { errorResponse } from "@/lib/api/error-response";
-import { createWarehouseSchema } from "@/lib/validators/warehouse";
+import { parseListQuery } from "@/lib/api/list-query";
+import {
+  createWarehouseSchema,
+  listWarehousesQuerySchema,
+} from "@/lib/validators/warehouse";
 import {
   createWarehouse,
   listWarehouses,
+  listWarehousesPage,
 } from "@/services/warehouse.service";
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
   try {
     await requireAuth();
 
-    const warehouses = await listWarehouses();
+    const parsed = parseListQuery(
+      request,
+      listWarehousesQuerySchema,
+    );
+
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+
+    /*
+     * No query parameters: return the full unpaged
+     * list. Option dropdowns rely on this; list pages
+     * always send page/pageSize.
+     */
+    if (parsed.empty) {
+      const warehouses = await listWarehouses();
+
+      return Response.json({
+        data: warehouses,
+      });
+    }
+
+    const page = await listWarehousesPage(parsed.query);
 
     return Response.json({
-      data: warehouses,
+      data: page.warehouses,
+      pagination: page.pagination,
     });
   } catch (error) {
     return errorResponse(error);

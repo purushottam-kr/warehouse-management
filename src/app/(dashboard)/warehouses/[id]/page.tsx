@@ -365,7 +365,7 @@ const WarehouseDetailPage = () => {
           </div>
 
           <Link
-            href={`/warehouses/${warehouse.id}/storage-spaces/new`}
+            href={`/storage-spaces/new?warehouse=${warehouse.id}`}
             className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white hover:bg-neutral-800"
           >
             <Plus className="h-4 w-4" />
@@ -385,7 +385,7 @@ const WarehouseDetailPage = () => {
             </p>
 
             <Link
-              href={`/warehouses/${warehouse.id}/storage-spaces/new`}
+              href={`/storage-spaces/new?warehouse=${warehouse.id}`}
               className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 px-3.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
             >
               <Plus className="h-4 w-4" />

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { listQueryBaseSchema } from "@/lib/validators/list-query";
+
 export const createItemSchema = z.object({
   sku: z
     .string()
@@ -70,3 +72,29 @@ export const updateItemSchema = z.object({
     .nullable()
     .optional(),
 });
+
+export const listItemsQuerySchema =
+  listQueryBaseSchema.extend({
+    search: z
+      .string()
+      .trim()
+      .max(
+        100,
+        "Search must be 100 characters or fewer.",
+      )
+      .optional(),
+
+    warehouseId: z
+      .string()
+      .uuid("Invalid warehouse ID.")
+      .optional(),
+
+    storageSpaceId: z
+      .string()
+      .uuid("Invalid storage space ID.")
+      .optional(),
+  });
+
+export type ListItemQuerySchemaInput = z.infer<
+  typeof listItemsQuerySchema
+>;
