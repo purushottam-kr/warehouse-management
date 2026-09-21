@@ -8,8 +8,9 @@ import {
   ArrowUpRight,
   MapPin,
   Pencil,
+  Trash2,
 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import type { ItemAllocationSummary } from "@/types/allocation";
@@ -23,6 +24,13 @@ type Item = {
   requiredStorageType: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+type CurrentUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: "ADMIN" | "STAFF";
 };
 
 type ItemResponse = {
@@ -55,20 +63,50 @@ const formatDate = (value: string) =>
 
 const ItemDetailPage = () => {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
 
   const [item, setItem] = useState<Item | null>(null);
   const [summary, setSummary] =
     useState<ItemAllocationSummary | null>(null);
 
+  const [currentUser, setCurrentUser] =
+    useState<CurrentUser | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [error, setError] = useState("");
   const [inventoryError, setInventoryError] =
     useState("");
+  const [deleteError, setDeleteError] =
+    useState("");
+
+  const loadCurrentUser = async () => {
+    try {
+      const response = await fetch("/api/auth/me", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as {
+        user?: CurrentUser;
+      };
+
+      setCurrentUser(data.user ?? null);
+    } catch {
+      setCurrentUser(null);
+    }
+  };
 
   const loadSummary = async () => {
     const response = await fetch(
       `/api/items/${params.id}/allocations`,
-      { cache: "no-store" },
+      {
+        cache: "no-store",
+      },
     );
 
     const data =
@@ -80,7 +118,7 @@ const ItemDetailPage = () => {
       throw new Error(
         "error" in data
           ? data.error?.message ??
-              "Unable to load inventory."
+            "Unable to load inventory."
           : "Unable to load inventory.",
       );
     }
@@ -97,13 +135,19 @@ const ItemDetailPage = () => {
   useEffect(() => {
     const loadItem = async () => {
       try {
+        setIsLoading(true);
         setError("");
         setInventoryError("");
+        setDeleteError("");
         setSummary(null);
+
+        await loadCurrentUser();
 
         const itemResponse = await fetch(
           `/api/items/${params.id}`,
-          { cache: "no-store" },
+          {
+            cache: "no-store",
+          },
         );
 
         const itemData =
@@ -115,7 +159,7 @@ const ItemDetailPage = () => {
           throw new Error(
             "error" in itemData
               ? itemData.error?.message ??
-                  "Unable to load item."
+                "Unable to load item."
               : "Unable to load item.",
           );
         }
@@ -153,8 +197,59 @@ const ItemDetailPage = () => {
     };
 
     void loadItem();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  const handleDelete = async () => {
+    if (!item || isDeleting) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete item "${item.name}" (${item.sku})? This action cannot be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      setDeleteError("");
+
+      const response = await fetch(
+        `/api/items/${item.id}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      const data =
+        (await response.json()) as
+          | ItemResponse
+          | ApiErrorResponse;
+
+      if (!response.ok) {
+        throw new Error(
+          "error" in data
+            ? data.error?.message ??
+              "Unable to delete item."
+            : "Unable to delete item.",
+        );
+      }
+
+      router.push("/items");
+    } catch (deleteError) {
+      setDeleteError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Unable to delete item.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -208,6 +303,19 @@ const ItemDetailPage = () => {
   const totalQuantity =
     summary?.totalQuantity ?? "0";
 
+  /*
+   * The API returns quantities as exact decimal strings.
+   * An item is deletable only when its total allocated
+   * quantity is exactly zero.
+   */
+  const isZeroQuantity =
+    /^0(?:\.0+)?$/.test(totalQuantity);
+
+  const canDelete =
+    currentUser?.role === "ADMIN" &&
+    isZeroQuantity &&
+    !inventoryError;
+
   return (
     <div className="space-y-6">
       <Link
@@ -235,13 +343,29 @@ const ItemDetailPage = () => {
           ) : null}
         </div>
 
-        <Link
-          href={`/items/${item.id}/edit`}
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
-        >
-          <Pencil className="h-4 w-4" />
-          Edit
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/items/${item.id}/edit`}
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit
+          </Link>
+
+          {canDelete ? (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting
+                ? "Deleting..."
+                : "Delete"}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {error ? (
@@ -250,6 +374,15 @@ const ItemDetailPage = () => {
           className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           {error}
+        </div>
+      ) : null}
+
+      {deleteError ? (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {deleteError}
         </div>
       ) : null}
 
@@ -390,15 +523,11 @@ const ItemDetailPage = () => {
                   >
                     <td className="px-5 py-4">
                       <p className="font-medium text-neutral-950">
-                        {
-                          location.storageSpaceName
-                        }
+                        {location.storageSpaceName}
                       </p>
 
                       <p className="mt-0.5 font-mono text-xs text-neutral-500">
-                        {
-                          location.storageSpaceCode
-                        }
+                        {location.storageSpaceCode}
                       </p>
                     </td>
 

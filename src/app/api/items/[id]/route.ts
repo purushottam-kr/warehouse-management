@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 import { errorResponse } from "@/lib/api/error-response";
-import { requireAuth } from "@/lib/auth/authorization";
+import { requireAuth, requirePermission } from "@/lib/auth/authorization";
 import {
   deleteItem,
   getItemById,
@@ -81,7 +81,7 @@ export const DELETE = async (
   context: RouteContext,
 ) => {
   try {
-    await requireAuth();
+    await requirePermission("ITEM_DELETE");
 
     const { id } = await context.params;
 
