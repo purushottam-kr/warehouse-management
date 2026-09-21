@@ -61,6 +61,7 @@ const WarehouseDetailPage = () => {
   const [user, setUser] = useState<CurrentUser | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
 
   const warehouseId = params.id;
@@ -172,6 +173,9 @@ const WarehouseDetailPage = () => {
     }
 
     try {
+      setIsDeleting(true);
+      setError("");
+
       const response = await fetch(
         `/api/warehouses/${warehouse.id}`,
         {
@@ -194,6 +198,8 @@ const WarehouseDetailPage = () => {
       router.refresh();
     } catch {
       setError("Unable to delete warehouse.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -313,9 +319,10 @@ const WarehouseDetailPage = () => {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="inline-flex h-9 items-center rounded-lg border border-red-200 px-3.5 text-sm font-medium text-red-700 hover:bg-red-50"
+                disabled={isDeleting}
+                className="inline-flex h-9 items-center rounded-lg border border-red-200 px-3.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Delete
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             ) : null}
           </div>

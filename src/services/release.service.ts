@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { items, storageSpaces } from "@/db/schema";
+import { items } from "@/db/schema";
 import {
   ConflictError,
   NotFoundError,

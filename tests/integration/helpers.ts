@@ -123,6 +123,7 @@ export const seedUser = async (
 
 export type TestWarehouse = {
   id: string;
+  code: string;
   status: string;
 };
 

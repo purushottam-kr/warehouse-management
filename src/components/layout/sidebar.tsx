@@ -15,13 +15,13 @@ export const Sidebar = ({ role }: SidebarProps) => {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-neutral-200 bg-white">
-      <div className="flex h-16 items-center gap-3 border-b border-neutral-200 px-5">
+    <aside className="flex h-full w-16 shrink-0 flex-col border-r border-neutral-200 bg-white md:w-64">
+      <div className="flex h-16 items-center justify-center gap-3 border-b border-neutral-200 px-2 md:justify-start md:px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white">
           <Package className="h-4 w-4" />
         </div>
 
-        <div>
+        <div className="hidden md:block">
           <p className="text-sm font-semibold tracking-tight text-neutral-950">
             Warehouse
           </p>
@@ -45,7 +45,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
 
             return (
               <div key={section.label}>
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+                <p className="mb-2 hidden px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400 md:block">
                   {section.label}
                 </p>
 
@@ -63,15 +63,17 @@ export const Sidebar = ({ role }: SidebarProps) => {
                       <Link
                         key={item.href}
                         href={item.href}
+                        aria-label={item.label}
+                        title={item.label}
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                          "flex items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors md:justify-start",
                           isActive
                             ? "bg-neutral-100 font-medium text-neutral-950"
                             : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-950",
                         )}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
-                        <span>{item.label}</span>
+                        <span className="hidden md:inline">{item.label}</span>
                       </Link>
                     );
                   })}
@@ -82,7 +84,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
         </div>
       </nav>
 
-      <div className="border-t border-neutral-200 p-4">
+      <div className="hidden border-t border-neutral-200 p-4 md:block">
         <p className="text-xs text-neutral-400">
           Warehouse Management
         </p>

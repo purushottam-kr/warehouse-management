@@ -75,7 +75,11 @@ const DashboardPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchDashboard();
+    const loadDashboard = async () => {
+      await fetchDashboard();
+    };
+
+    void loadDashboard();
   }, [fetchDashboard]);
 
   return (
