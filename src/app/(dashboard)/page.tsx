@@ -79,7 +79,7 @@ const DashboardPage = () => {
   }, [fetchDashboard]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 pb-12">
+    <div className="mx-auto max-w-7xl flex-1 min-h-0 w-full overflow-y-auto space-y-8 pb-12 pr-1">
       {/* Header & Title */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

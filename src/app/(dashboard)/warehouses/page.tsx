@@ -159,71 +159,73 @@ const WarehousesPage = () => {
     : 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
-            Warehouses
-          </h1>
+    <div className="flex flex-1 flex-col min-h-0 h-full overflow-hidden space-y-4">
+      <div className="shrink-0 space-y-4 pb-1">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+              Warehouses
+            </h1>
 
-          <p className="mt-1 text-sm text-neutral-500">
-            Manage warehouse locations and their operational status.
-          </p>
+            <p className="mt-1 text-sm text-neutral-500">
+              Manage warehouse locations and their operational status.
+            </p>
+          </div>
+
+          <Link
+            href="/warehouses/new"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
+          >
+            <Plus className="h-4 w-4" />
+            New warehouse
+          </Link>
         </div>
 
-        <Link
-          href="/warehouses/new"
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
-        >
-          <Plus className="h-4 w-4" />
-          New warehouse
-        </Link>
-      </div>
+        {error ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {error}
+          </div>
+        ) : null}
 
-      {error ? (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {error}
-        </div>
-      ) : null}
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="relative sm:max-w-xs sm:flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="relative sm:max-w-xs sm:flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(event) =>
+                changeFilter(() =>
+                  setSearchInput(event.target.value),
+                )
+              }
+              placeholder="Search by code or name"
+              aria-label="Search warehouses"
+              className="h-10 w-full rounded-lg border border-neutral-300 bg-white pl-9 pr-3 text-sm text-neutral-950 outline-none placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+            />
+          </div>
 
-          <input
-            type="search"
-            value={searchInput}
+          <select
+            value={status}
             onChange={(event) =>
               changeFilter(() =>
-                setSearchInput(event.target.value),
+                setStatus(event.target.value),
               )
             }
-            placeholder="Search by code or name"
-            aria-label="Search warehouses"
-            className="h-10 w-full rounded-lg border border-neutral-300 bg-white pl-9 pr-3 text-sm text-neutral-950 outline-none placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
-          />
+            aria-label="Filter by status"
+            className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+          >
+            <option value="">All statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
         </div>
-
-        <select
-          value={status}
-          onChange={(event) =>
-            changeFilter(() =>
-              setStatus(event.target.value),
-            )
-          }
-          aria-label="Filter by status"
-          className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
-        >
-          <option value="">All statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </select>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white">
         {isLoading ? (
           <div className="divide-y divide-neutral-100">
             {Array.from({ length: 4 }).map((_, index) => (
@@ -278,27 +280,27 @@ const WarehousesPage = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="flex-1 min-h-0 overflow-auto">
               <table className="w-full min-w-[720px]">
-                <thead>
-                  <tr className="border-b border-neutral-200 bg-neutral-50/70">
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                <thead className="sticky top-0 z-10 bg-neutral-50 shadow-2xs border-b border-neutral-200">
+                  <tr className="bg-neutral-50">
+                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                       Code
                     </th>
 
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                       Name
                     </th>
 
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                       Address
                     </th>
 
-                    <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                       Status
                     </th>
 
-                    <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500">
                       Capacity
                     </th>
                   </tr>
@@ -384,7 +386,7 @@ const WarehousesPage = () => {
             </div>
 
             {pagination ? (
-              <div className="flex items-center justify-between gap-4 border-t border-neutral-200 px-5 py-3">
+              <div className="shrink-0 flex items-center justify-between gap-4 border-t border-neutral-200 px-5 py-3">
                 <p className="text-xs text-neutral-500">
                   Showing {start}–{end} of{" "}
                   {pagination.total}

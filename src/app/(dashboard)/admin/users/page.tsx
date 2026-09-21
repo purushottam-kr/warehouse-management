@@ -199,36 +199,38 @@ const UsersPage = () => {
     userId === currentUserId;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
-          Users
-        </h1>
+    <div className="flex flex-1 flex-col min-h-0 h-full overflow-hidden space-y-4">
+      <div className="shrink-0 space-y-4 pb-1">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+            Users
+          </h1>
 
-        <p className="mt-1 text-sm text-neutral-500">
-          Manage roles and account access.
-        </p>
+          <p className="mt-1 text-sm text-neutral-500">
+            Manage roles and account access.
+          </p>
+        </div>
+
+        {error ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {error}
+          </div>
+        ) : null}
+
+        {actionError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {actionError}
+          </div>
+        ) : null}
       </div>
 
-      {error ? (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {error}
-        </div>
-      ) : null}
-
-      {actionError ? (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {actionError}
-        </div>
-      ) : null}
-
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white">
         {isLoading ? (
           <div className="divide-y divide-neutral-100">
             {Array.from({ length: 4 }).map(
@@ -282,27 +284,27 @@ const UsersPage = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="flex-1 min-h-0 overflow-auto">
             <table className="w-full min-w-[720px]">
-              <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50/70">
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+              <thead className="sticky top-0 z-10 bg-neutral-50 shadow-2xs border-b border-neutral-200">
+                <tr className="bg-neutral-50">
+                  <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                     User
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                     Email
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                     Role
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                     Status
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
                     Joined
                   </th>
                 </tr>

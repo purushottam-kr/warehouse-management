@@ -14,16 +14,16 @@ type AppShellProps = {
 
 export const AppShell = ({ children, user }: AppShellProps) => {
   return (
-    <div className="flex min-h-screen bg-neutral-50">
+    <div className="flex h-screen w-screen overflow-hidden bg-neutral-50">
       <Sidebar role={user.role} />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col h-screen overflow-hidden">
         <Header
           name={user.name}
           role={user.role}
         />
 
-        <main className="min-w-0 flex-1 p-6">
+        <main className="min-w-0 flex-1 flex flex-col overflow-hidden p-6">
           {children}
         </main>
       </div>
