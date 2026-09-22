@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
+import { STORAGE_TYPES } from "@/lib/inventory/storage-type";
+
 type Item = {
   id: string;
   sku: string;
@@ -373,19 +375,24 @@ const EditItemPage = () => {
                 </span>
               </label>
 
-              <input
+              <select
                 id="requiredStorageType"
-                type="text"
                 value={requiredStorageType}
                 onChange={(event) =>
                   setRequiredStorageType(
                     event.target.value,
                   )
                 }
-                maxLength={50}
                 disabled={isSubmitting}
-                className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 font-mono text-sm uppercase text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
-              />
+                className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
+              >
+                <option value="">Any storage type</option>
+                {STORAGE_TYPES.map((storageType) => (
+                  <option key={storageType} value={storageType}>
+                    {storageType}
+                  </option>
+                ))}
+              </select>
 
               <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
                 Leave empty for no restriction.

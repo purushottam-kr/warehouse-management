@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { STORAGE_TYPES } from "@/lib/inventory/storage-type";
+
 type Warehouse = {
   id: string;
   name: string;
@@ -331,16 +333,20 @@ const NewStorageSpaceForm = () => {
                 Storage type
               </label>
 
-              <input
+              <select
                 id="storageType"
-                type="text"
                 value={storageType}
                 onChange={(event) => setStorageType(event.target.value)}
-                placeholder="Cold"
-                maxLength={50}
                 disabled={isSubmitting}
                 className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 text-sm outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
-              />
+              >
+                <option value="">Select storage type</option>
+                {STORAGE_TYPES.map((storageType) => (
+                  <option key={storageType} value={storageType}>
+                    {storageType}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

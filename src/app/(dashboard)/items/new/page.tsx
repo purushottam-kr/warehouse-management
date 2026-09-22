@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { STORAGE_TYPES } from "@/lib/inventory/storage-type";
+
 type ItemResponse = {
   data: {
     id: string;
@@ -317,25 +319,29 @@ const NewItemPage = () => {
                 </span>
               </label>
 
-              <input
+              <select
                 id="requiredStorageType"
-                type="text"
                 value={requiredStorageType}
                 onChange={(event) =>
                   setRequiredStorageType(
                     event.target.value,
                   )
                 }
-                maxLength={50}
                 disabled={isSubmitting}
-                placeholder="COLD"
                 aria-invalid={
                   fieldErrors.requiredStorageType
                     ? true
                     : undefined
                 }
-                className={`${inputClassName} font-mono uppercase placeholder:font-sans`}
-              />
+                className={inputClassName}
+              >
+                <option value="">Any storage type</option>
+                {STORAGE_TYPES.map((storageType) => (
+                  <option key={storageType} value={storageType}>
+                    {storageType}
+                  </option>
+                ))}
+              </select>
 
               {fieldErrors.requiredStorageType ? (
                 <p

@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { STORAGE_TYPES } from "@/lib/inventory/storage-type";
+
 import type { ListPagination } from "@/types/pagination";
 import type {
   StorageSpaceListRow,
@@ -303,19 +305,23 @@ const StorageSpacesPage = () => {
             ))}
           </select>
 
-          <input
-            type="text"
+          <select
             value={storageType}
             onChange={(event) =>
               changeFilter(() =>
                 setStorageType(event.target.value),
               )
             }
-            placeholder="Storage type"
             aria-label="Filter by storage type"
-            maxLength={50}
             className="h-10 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 sm:max-w-[10rem]"
-          />
+          >
+            <option value="">All storage types</option>
+            {STORAGE_TYPES.map((storageType) => (
+              <option key={storageType} value={storageType}>
+                {storageType}
+              </option>
+            ))}
+          </select>
 
           <select
             value={status}
