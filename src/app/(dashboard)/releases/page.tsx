@@ -389,11 +389,11 @@ const ReleasesWorkspace = () => {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
           Release inventory
         </h1>
 
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
           Remove allocated inventory from a storage
           location.
         </p>
@@ -402,23 +402,23 @@ const ReleasesWorkspace = () => {
       {itemsError ? (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
         >
           {itemsError}
         </div>
       ) : null}
 
       {result ? (
-        <div className="rounded-xl border border-emerald-200 bg-white">
-          <div className="flex items-start gap-3 border-b border-neutral-100 px-5 py-4">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-white dark:bg-neutral-900">
+          <div className="flex items-start gap-3 border-b border-neutral-100 dark:border-neutral-800 px-5 py-4">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400 " />
 
             <div>
-              <h2 className="text-sm font-semibold text-neutral-950">
+              <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100">
                 Release successful
               </h2>
 
-              <p className="mt-1 text-sm text-neutral-500">
+              <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
                 {formatQuantity(
                   result.release.releasedQuantity,
                 )}{" "}
@@ -428,12 +428,12 @@ const ReleasesWorkspace = () => {
           </div>
 
           <div className="px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Storage location
             </p>
 
-            <div className="mt-3 rounded-lg border border-neutral-200 p-4">
-              <p className="text-sm font-medium text-neutral-950">
+            <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+              <p className="text-sm font-medium text-neutral-950 dark:text-neutral-100">
                 {
                   summary?.locations.find(
                     (location) =>
@@ -447,23 +447,23 @@ const ReleasesWorkspace = () => {
 
               <dl className="mt-3 space-y-2">
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
                     Before
                   </dt>
 
-                  <dd className="font-mono text-sm text-neutral-950">
+                  <dd className="font-mono text-sm text-neutral-950 dark:text-neutral-100">
                     {formatQuantity(
                       result.beforeQuantity,
                     )}
                   </dd>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 border-t border-neutral-100 pt-2">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                <div className="flex items-center justify-between gap-4 border-t border-neutral-100 dark:border-neutral-800 pt-2">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
                     After
                   </dt>
 
-                  <dd className="font-mono text-sm text-neutral-950">
+                  <dd className="font-mono text-sm text-neutral-950 dark:text-neutral-100">
                     {formatQuantity(
                       result.afterQuantity,
                     )}
@@ -471,21 +471,21 @@ const ReleasesWorkspace = () => {
                 </div>
               </dl>
 
-              <p className="mt-3 text-xs text-neutral-500">
+              <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400 ">
                 Quantities reflect the item&apos;s
                 current allocation summary.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-neutral-100 px-5 py-4">
+          <div className="flex items-center justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800 px-5 py-4">
             <button
               type="button"
               onClick={() => {
                 setResult(null);
                 setQuantity("");
               }}
-              className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
+              className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-950 dark:hover:text-neutral-100"
             >
               Release more
             </button>
@@ -493,7 +493,7 @@ const ReleasesWorkspace = () => {
             {item ? (
               <Link
                 href={`/items/${item.id}`}
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 transition hover:bg-neutral-800 dark:hover:bg-white"
               >
                 View item
                 <ArrowRight className="h-4 w-4" />
@@ -504,13 +504,13 @@ const ReleasesWorkspace = () => {
       ) : (
         <form
           onSubmit={handleRelease}
-          className="rounded-xl border border-neutral-200 bg-white p-6"
+          className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6"
         >
           <div className="space-y-5">
             <div>
               <label
                 htmlFor="item"
-                className="mb-2 block text-sm font-medium text-neutral-800"
+                className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
               >
                 Item
               </label>
@@ -528,7 +528,7 @@ const ReleasesWorkspace = () => {
                   isReleasing ||
                   items.length === 0
                 }
-                className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
               >
                 <option value="">
                   {isLoadingItems
@@ -548,38 +548,38 @@ const ReleasesWorkspace = () => {
             </div>
 
             {isLoadingItem ? (
-              <div className="space-y-3 rounded-lg border border-neutral-200 p-4">
-                <div className="h-4 w-40 animate-pulse rounded bg-neutral-100" />
+              <div className="space-y-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+                <div className="h-4 w-40 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
 
-                <div className="h-3 w-24 animate-pulse rounded bg-neutral-100" />
+                <div className="h-3 w-24 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
 
-                <div className="h-16 animate-pulse rounded bg-neutral-100" />
+                <div className="h-16 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
               </div>
             ) : item ? (
               <>
-                <div className="rounded-lg border border-neutral-200 p-4">
+                <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-sm font-semibold text-neutral-950">
+                      <p className="text-sm font-semibold text-neutral-950 dark:text-neutral-100">
                         {item.name}
                       </p>
 
-                      <p className="mt-0.5 font-mono text-xs text-neutral-500">
+                      <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400 ">
                         {item.sku}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
                         Current inventory
                       </p>
 
-                      <p className="mt-0.5 text-lg font-semibold text-neutral-950">
+                      <p className="mt-0.5 text-lg font-semibold text-neutral-950 dark:text-neutral-100">
                         {formatQuantity(
                           summary?.totalQuantity ??
                             "0",
                         )}{" "}
-                        <span className="text-sm font-normal text-neutral-500">
+                        <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400 ">
                           {item.unit}
                         </span>
                       </p>
@@ -590,7 +590,7 @@ const ReleasesWorkspace = () => {
                 <div>
                   <label
                     htmlFor="location"
-                    className="mb-2 block text-sm font-medium text-neutral-800"
+                    className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
                   >
                     Storage location
                   </label>
@@ -607,7 +607,7 @@ const ReleasesWorkspace = () => {
                       isReleasing ||
                       locations.length === 0
                     }
-                    className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                    className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
                   >
                     <option value="">
                       {locations.length === 0
@@ -636,21 +636,21 @@ const ReleasesWorkspace = () => {
                   </select>
 
                   {selectedLocation ? (
-                    <div className="mt-3 rounded-lg border border-neutral-200 p-4">
-                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
                         Allocated here
                       </p>
 
-                      <p className="mt-1 text-lg font-semibold text-neutral-950">
+                      <p className="mt-1 text-lg font-semibold text-neutral-950 dark:text-neutral-100">
                         {formatQuantity(
                           selectedLocation.quantity,
                         )}{" "}
-                        <span className="text-sm font-normal text-neutral-500">
+                        <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400 ">
                           {item.unit}
                         </span>
                       </p>
 
-                      <p className="mt-1 text-xs text-neutral-500">
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 ">
                         {selectedLocation.warehouseName}{" "}
                         ·{" "}
                         {
@@ -664,7 +664,7 @@ const ReleasesWorkspace = () => {
                 <div>
                   <label
                     htmlFor="quantity"
-                    className="mb-2 block text-sm font-medium text-neutral-800"
+                    className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
                   >
                     Quantity to release
                   </label>
@@ -679,14 +679,14 @@ const ReleasesWorkspace = () => {
                     }
                     placeholder="25.000"
                     disabled={isReleasing}
-                    className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-neutral-950 outline-none placeholder:font-sans placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                    className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 font-mono text-sm text-neutral-950 dark:text-neutral-100 outline-none placeholder:font-sans placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
                   />
                 </div>
 
                 {inventoryError ? (
                   <p
                     role="alert"
-                    className="text-xs text-red-600"
+                    className="text-xs text-red-600 dark:text-red-400 "
                   >
                     {inventoryError}
                   </p>
@@ -695,7 +695,7 @@ const ReleasesWorkspace = () => {
                 {formError ? (
                   <div
                     role="alert"
-                    className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                    className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-3 py-2.5 text-sm text-red-700 dark:text-red-300 "
                   >
                     {formError}
                   </div>
@@ -704,12 +704,12 @@ const ReleasesWorkspace = () => {
             ) : itemError ? (
               <div
                 role="alert"
-                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-3 py-2.5 text-sm text-red-700 dark:text-red-300 "
               >
                 {itemError}
               </div>
             ) : (
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 ">
                 Select an item to choose a storage
                 location.
               </p>
@@ -717,13 +717,13 @@ const ReleasesWorkspace = () => {
           </div>
 
           {item ? (
-            <div className="mt-6 flex items-center justify-end border-t border-neutral-100 pt-5">
+            <div className="mt-6 flex items-center justify-end border-t border-neutral-100 dark:border-neutral-800 pt-5">
               <button
                 type="submit"
                 disabled={
                   isReleasing || !selectedLocationId
                 }
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isReleasing ? (
                   "Releasing..."
@@ -747,9 +747,9 @@ const ReleasesPage = () => {
     <Suspense
       fallback={
         <div className="max-w-2xl space-y-6">
-          <div className="h-8 w-56 animate-pulse rounded bg-neutral-200" />
+          <div className="h-8 w-56 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 bg-white" />
+          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
         </div>
       }
     >

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
+
 /*
  * Self-hosted Geist (next/font/local) so dev and build never
  * depend on reaching Google Fonts at runtime.
@@ -27,11 +30,28 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    /*
+     * suppressHydrationWarning: the blocking theme script may
+     * add `.dark` before React hydrates, which is expected.
+     */
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {/*
+         * Plain <script> in the layout is hoisted to <head> and
+         * runs before first paint: no light-flash for dark users.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: THEME_INIT_SCRIPT,
+          }}
+        />
+
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

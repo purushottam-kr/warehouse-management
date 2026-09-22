@@ -15,17 +15,17 @@ export const Sidebar = ({ role }: SidebarProps) => {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-16 shrink-0 flex-col border-r border-neutral-200 bg-white md:w-64">
-      <div className="flex h-16 items-center justify-center gap-3 border-b border-neutral-200 px-2 md:justify-start md:px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white">
+    <aside className="flex h-full w-16 shrink-0 flex-col border-r border-neutral-200 bg-white md:w-64 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="flex h-16 items-center justify-center gap-3 border-b border-neutral-200 px-2 md:justify-start md:px-5 dark:border-neutral-800">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-950">
           <Package className="h-4 w-4" />
         </div>
 
         <div className="hidden md:block">
-          <p className="text-sm font-semibold tracking-tight text-neutral-950">
+          <p className="text-sm font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             Warehouse
           </p>
-          <p className="text-[11px] text-neutral-500">
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             Management
           </p>
         </div>
@@ -45,7 +45,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
 
             return (
               <div key={section.label}>
-                <p className="mb-2 hidden px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400 md:block">
+                <p className="mb-2 hidden px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400 md:block dark:text-neutral-500">
                   {section.label}
                 </p>
 
@@ -68,8 +68,8 @@ export const Sidebar = ({ role }: SidebarProps) => {
                         className={cn(
                           "flex items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors md:justify-start",
                           isActive
-                            ? "bg-neutral-100 font-medium text-neutral-950"
-                            : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-950",
+                            ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-neutral-100"
+                            : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
                         )}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
@@ -84,11 +84,11 @@ export const Sidebar = ({ role }: SidebarProps) => {
         </div>
       </nav>
 
-      <div className="hidden border-t border-neutral-200 p-4 md:block">
-        <p className="text-xs text-neutral-400">
+      <div className="hidden border-t border-neutral-200 p-4 md:block dark:border-neutral-800">
+        <p className="text-xs text-neutral-400 dark:text-neutral-500">
           Warehouse Management
         </p>
-        <p className="mt-1 text-xs text-neutral-500">
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
           Inventory operations
         </p>
       </div>

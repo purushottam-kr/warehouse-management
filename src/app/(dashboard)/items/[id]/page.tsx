@@ -254,22 +254,22 @@ const ItemDetailPage = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-4 w-20 animate-pulse rounded bg-neutral-200" />
+        <div className="h-4 w-20 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
 
-        <div className="h-8 w-72 animate-pulse rounded bg-neutral-200" />
+        <div className="h-8 w-72 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
 
         <div className="grid gap-4 sm:grid-cols-3">
           {Array.from({ length: 3 }).map(
             (_, index) => (
               <div
                 key={index}
-                className="h-24 animate-pulse rounded-xl border border-neutral-200 bg-white"
+                className="h-24 animate-pulse rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
               />
             ),
           )}
         </div>
 
-        <div className="h-48 animate-pulse rounded-xl border border-neutral-200 bg-white" />
+        <div className="h-48 animate-pulse rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
       </div>
     );
   }
@@ -279,18 +279,18 @@ const ItemDetailPage = () => {
       <div className="space-y-4">
         <Link
           href="/items"
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-950"
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100 "
         >
           <ArrowLeft className="h-4 w-4" />
           Back to items
         </Link>
 
-        <div className="rounded-lg border border-neutral-200 bg-white p-8 text-center">
-          <h1 className="text-lg font-semibold text-neutral-950">
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
+          <h1 className="text-lg font-semibold text-neutral-950 dark:text-neutral-100 ">
             Item not found
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             {error ||
               "The item may have been deleted or is no longer available."}
           </p>
@@ -320,7 +320,7 @@ const ItemDetailPage = () => {
     <div className="space-y-6">
       <Link
         href="/items"
-        className="inline-flex items-center gap-2 text-sm text-neutral-500 transition hover:text-neutral-950"
+        className="inline-flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 transition hover:text-neutral-950 dark:hover:text-neutral-100 "
       >
         <ArrowLeft className="h-4 w-4" />
         Items
@@ -328,16 +328,16 @@ const ItemDetailPage = () => {
 
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <p className="font-mono text-sm text-neutral-500">
+          <p className="font-mono text-sm text-neutral-500 dark:text-neutral-400">
             {item.sku}
           </p>
 
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100 ">
             {item.name}
           </h1>
 
           {item.description ? (
-            <p className="mt-1 max-w-2xl text-sm text-neutral-500">
+            <p className="mt-1 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
               {item.description}
             </p>
           ) : null}
@@ -346,7 +346,7 @@ const ItemDetailPage = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/items/${item.id}/edit`}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 "
           >
             <Pencil className="h-4 w-4" />
             Edit
@@ -357,7 +357,7 @@ const ItemDetailPage = () => {
               type="button"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-red-200 dark:border-red-900 bg-white dark:bg-neutral-900 px-4 text-sm font-medium text-red-600 dark:text-red-400 transition hover:bg-red-50 dark:hover:bg-red-950 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />
               {isDeleting
@@ -371,7 +371,7 @@ const ItemDetailPage = () => {
       {error ? (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
         >
           {error}
         </div>
@@ -380,71 +380,71 @@ const ItemDetailPage = () => {
       {deleteError ? (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
         >
           {deleteError}
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
             Required storage
           </p>
 
-          <p className="mt-2 text-lg font-semibold text-neutral-950">
+          <p className="mt-2 text-lg font-semibold text-neutral-950 dark:text-neutral-100 ">
             {item.requiredStorageType ?? "Any"}
           </p>
 
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
             {item.requiredStorageType
               ? "Allocations target this storage type."
               : "No storage type restriction."}
           </p>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
             Total inventory
           </p>
 
-          <p className="mt-2 text-lg font-semibold text-neutral-950">
+          <p className="mt-2 text-lg font-semibold text-neutral-950 dark:text-neutral-100 ">
             {formatQuantity(totalQuantity)}{" "}
-            <span className="text-sm font-normal text-neutral-500">
+            <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
               {item.unit}
             </span>
           </p>
 
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
             Sum of all allocations.
           </p>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
             Storage locations
           </p>
 
-          <p className="mt-2 text-lg font-semibold text-neutral-950">
+          <p className="mt-2 text-lg font-semibold text-neutral-950 dark:text-neutral-100 ">
             {locations.length}
           </p>
 
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
             Distinct spaces holding this item.
           </p>
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
-        <div className="flex items-center justify-between gap-4 border-b border-neutral-200 px-5 py-4">
-          <h2 className="text-sm font-semibold text-neutral-950">
+      <section className="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="flex items-center justify-between gap-4 border-b border-neutral-200 dark:border-neutral-800 px-5 py-4">
+          <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100 ">
             Storage locations
           </h2>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Link
               href={`/allocations?itemId=${item.id}`}
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white transition hover:bg-neutral-800"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-3.5 text-sm font-medium text-white dark:text-neutral-950 transition hover:bg-neutral-800 dark:hover:bg-white "
             >
               <ArrowUpRight className="h-4 w-4" />
               Allocate inventory
@@ -452,7 +452,7 @@ const ItemDetailPage = () => {
 
             <Link
               href={`/transfers?itemId=${item.id}`}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 "
             >
               <ArrowRightLeft className="h-4 w-4" />
               Transfer inventory
@@ -460,7 +460,7 @@ const ItemDetailPage = () => {
 
             <Link
               href={`/releases?itemId=${item.id}`}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 "
             >
               <ArrowDownToLine className="h-4 w-4" />
               Release inventory
@@ -471,7 +471,7 @@ const ItemDetailPage = () => {
         {inventoryError ? (
           <div
             role="alert"
-            className="border-b border-neutral-200 px-5 py-3 text-sm text-red-700"
+            className="border-b border-neutral-200 dark:border-neutral-800 px-5 py-3 text-sm text-red-700 dark:text-red-300 "
           >
             {inventoryError}
           </div>
@@ -479,15 +479,15 @@ const ItemDetailPage = () => {
 
         {locations.length === 0 ? (
           <div className="flex min-h-60 flex-col items-center justify-center px-6 text-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-neutral-100">
-              <MapPin className="h-5 w-5 text-neutral-500" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800">
+              <MapPin className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
             </div>
 
-            <h3 className="mt-4 text-sm font-semibold text-neutral-950">
+            <h3 className="mt-4 text-sm font-semibold text-neutral-950 dark:text-neutral-100 ">
               No inventory allocated
             </h3>
 
-            <p className="mt-1 max-w-sm text-sm text-neutral-500">
+            <p className="mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">
               Allocate inventory to store this item
               in eligible storage spaces.
             </p>
@@ -496,56 +496,56 @@ const ItemDetailPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px]">
               <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50/70">
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/70">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Storage space
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Warehouse
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Storage type
                   </th>
 
-                  <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Quantity
                   </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 ">
                 {locations.map((location) => (
                   <tr
                     key={location.storageSpaceId}
-                    className="transition hover:bg-neutral-50"
+                    className="transition hover:bg-neutral-50 dark:hover:bg-neutral-800 "
                   >
                     <td className="px-5 py-4">
-                      <p className="font-medium text-neutral-950">
+                      <p className="font-medium text-neutral-950 dark:text-neutral-100 ">
                         {location.storageSpaceName}
                       </p>
 
-                      <p className="mt-0.5 font-mono text-xs text-neutral-500">
+                      <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400">
                         {location.storageSpaceCode}
                       </p>
                     </td>
 
-                    <td className="px-5 py-4 text-sm text-neutral-600">
+                    <td className="px-5 py-4 text-sm text-neutral-600 dark:text-neutral-400">
                       {location.warehouseName}
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600">
+                      <span className="inline-flex rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600 dark:text-neutral-400">
                         {location.storageType}
                       </span>
                     </td>
 
-                    <td className="px-5 py-4 text-right font-mono text-sm text-neutral-950">
+                    <td className="px-5 py-4 text-right font-mono text-sm text-neutral-950 dark:text-neutral-100 ">
                       {formatQuantity(
                         location.quantity,
                       )}{" "}
-                      <span className="font-sans text-xs text-neutral-500">
+                      <span className="font-sans text-xs text-neutral-500 dark:text-neutral-400">
                         {item.unit}
                       </span>
                     </td>
@@ -557,50 +557,50 @@ const ItemDetailPage = () => {
         )}
       </section>
 
-      <section className="rounded-xl border border-neutral-200 bg-white">
-        <div className="border-b border-neutral-200 px-5 py-4">
-          <h2 className="text-sm font-semibold text-neutral-950">
+      <section className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="border-b border-neutral-200 dark:border-neutral-800 px-5 py-4">
+          <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100 ">
             Item details
           </h2>
         </div>
 
-        <div className="grid gap-px bg-neutral-200 sm:grid-cols-2">
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+        <div className="grid gap-px bg-neutral-200 dark:bg-neutral-700 sm:grid-cols-2">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               SKU
             </p>
 
-            <p className="mt-1 font-mono text-sm font-medium text-neutral-950">
+            <p className="mt-1 font-mono text-sm font-medium text-neutral-950 dark:text-neutral-100 ">
               {item.sku}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               Unit
             </p>
 
-            <p className="mt-1 text-sm font-medium text-neutral-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100 ">
               {item.unit}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               Created
             </p>
 
-            <p className="mt-1 text-sm font-medium text-neutral-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100 ">
               {formatDate(item.createdAt)}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               Last updated
             </p>
 
-            <p className="mt-1 text-sm font-medium text-neutral-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100 ">
               {formatDate(item.updatedAt)}
             </p>
           </div>

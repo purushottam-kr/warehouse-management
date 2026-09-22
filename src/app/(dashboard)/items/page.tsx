@@ -470,11 +470,11 @@ const ItemsPage = () => {
       <div className="shrink-0 space-y-4 pb-1">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
               Items
             </h1>
 
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
               Manage product catalog and storage
               requirements.
             </p>
@@ -485,7 +485,7 @@ const ItemsPage = () => {
               type="button"
               onClick={handleExport}
               disabled={isExporting || isImporting}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download className="h-4 w-4" />
               {isExporting ? "Exporting..." : "Export"}
@@ -495,7 +495,7 @@ const ItemsPage = () => {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting || isExporting}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Upload className="h-4 w-4" />
               {isImporting ? "Importing..." : "Import"}
@@ -512,7 +512,7 @@ const ItemsPage = () => {
 
             <Link
               href="/items/new"
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 transition hover:bg-neutral-800 dark:hover:bg-white"
             >
               <Plus className="h-4 w-4" />
               New item
@@ -523,7 +523,7 @@ const ItemsPage = () => {
         {exportError ? (
           <div
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
           >
             Export failed: {exportError}
           </div>
@@ -532,13 +532,13 @@ const ItemsPage = () => {
         {importError ? (
           <div
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
           >
             <p className="font-medium">
               Import failed: {importError}
             </p>
 
-            <p className="mt-1 text-xs text-red-600">
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400 ">
               No items were imported. Fix the rows below
               and try again. Limits: 2 MB,{" "}
               {ITEM_IMPORT_MAX_ROWS} rows.{" "}
@@ -558,8 +558,8 @@ const ItemsPage = () => {
             role="status"
             className={`rounded-lg border px-4 py-3 text-sm ${
               importSummary.errors.length === 0
-                ? "border-green-200 bg-green-50 text-green-700"
-                : "border-amber-200 bg-amber-50 text-amber-800"
+                ? "border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 "
+                : "border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 "
             }`}
           >
             <p className="font-medium">
@@ -590,7 +590,7 @@ const ItemsPage = () => {
         {error ? (
           <div
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
           >
             {error}
           </div>
@@ -598,7 +598,7 @@ const ItemsPage = () => {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="relative sm:max-w-xs sm:flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
 
             <input
               type="search"
@@ -610,7 +610,7 @@ const ItemsPage = () => {
               }
               placeholder="Search SKU or item name"
               aria-label="Search items"
-              className="h-10 w-full rounded-lg border border-neutral-300 bg-white pl-9 pr-3 text-sm text-neutral-950 outline-none placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+              className="h-10 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 pl-9 pr-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 dark:focus:ring-neutral-300"
             />
           </div>
 
@@ -632,7 +632,7 @@ const ItemsPage = () => {
               });
             }}
             aria-label="Filter by warehouse"
-            className="h-10 max-w-xs rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+            className="h-10 max-w-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 dark:focus:ring-neutral-300"
           >
             <option value="">All warehouses</option>
 
@@ -655,7 +655,7 @@ const ItemsPage = () => {
             }
             aria-label="Filter by storage space"
             disabled={!warehouseId || isLoadingSpaces}
-            className="h-10 max-w-xs rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400"
+            className="h-10 max-w-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 disabled:text-neutral-400 dark:disabled:text-neutral-500"
           >
             <option value="">
               {!warehouseId
@@ -677,44 +677,44 @@ const ItemsPage = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
         {isLoading ? (
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800 ">
             {Array.from({ length: 4 }).map(
               (_, index) => (
                 <div
                   key={index}
                   className="flex items-center gap-4 px-5 py-4"
                 >
-                  <div className="h-4 w-28 animate-pulse rounded bg-neutral-100" />
+                  <div className="h-4 w-28 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
 
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-40 animate-pulse rounded bg-neutral-100" />
-                    <div className="h-3 w-24 animate-pulse rounded bg-neutral-100" />
+                    <div className="h-4 w-40 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
+                    <div className="h-3 w-24 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
                   </div>
 
-                  <div className="h-4 w-16 animate-pulse rounded bg-neutral-100" />
+                  <div className="h-4 w-16 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
                 </div>
               ),
             )}
           </div>
         ) : items.length === 0 ? (
           <div className="flex min-h-80 flex-col items-center justify-center px-6 text-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-neutral-100">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800">
               {hasFilters ? (
-                <Search className="h-5 w-5 text-neutral-500" />
+                <Search className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
               ) : (
-                <Boxes className="h-5 w-5 text-neutral-500" />
+                <Boxes className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
               )}
             </div>
 
-            <h2 className="mt-4 text-sm font-semibold text-neutral-950">
+            <h2 className="mt-4 text-sm font-semibold text-neutral-950 dark:text-neutral-100">
               {hasFilters
                 ? "No items match your filters"
                 : "No items yet"}
             </h2>
 
-            <p className="mt-1 max-w-sm text-sm text-neutral-500">
+            <p className="mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">
               {hasFilters
                 ? "Try adjusting the search or filters."
                 : "Create your first item to start tracking inventory and storage requirements."}
@@ -723,7 +723,7 @@ const ItemsPage = () => {
             {!hasFilters ? (
               <Link
                 href="/items/new"
-                className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white hover:bg-neutral-800"
+                className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-3.5 text-sm font-medium text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-white"
               >
                 <Plus className="h-4 w-4" />
                 Create item
@@ -734,25 +734,25 @@ const ItemsPage = () => {
           <>
             <div className="flex-1 min-h-0 overflow-auto">
               <table className="w-full min-w-[640px]">
-                <thead className="sticky top-0 z-10 bg-neutral-50 shadow-2xs border-b border-neutral-200">
-                  <tr className="bg-neutral-50">
-                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                <thead className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 shadow-2xs border-b border-neutral-200 dark:border-neutral-800">
+                  <tr className="bg-neutral-50 dark:bg-neutral-950">
+                    <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       SKU
                     </th>
 
-                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       Item name
                     </th>
 
-                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       Unit
                     </th>
 
-                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       Required storage
                     </th>
 
-                    <th className="sticky top-0 z-10 bg-neutral-50 px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       <span className="sr-only">
                         View
                       </span>
@@ -760,16 +760,16 @@ const ItemsPage = () => {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-neutral-100">
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 ">
                   {items.map((item) => (
                     <tr
                       key={item.id}
-                      className="transition hover:bg-neutral-50"
+                      className="transition hover:bg-neutral-50 dark:hover:bg-neutral-800"
                     >
                       <td className="px-5 py-4">
                         <Link
                           href={`/items/${item.id}`}
-                          className="font-mono text-sm text-neutral-950 hover:underline"
+                          className="font-mono text-sm text-neutral-950 dark:text-neutral-100 hover:underline"
                         >
                           {item.sku}
                         </Link>
@@ -778,25 +778,25 @@ const ItemsPage = () => {
                       <td className="px-5 py-4">
                         <Link
                           href={`/items/${item.id}`}
-                          className="font-medium text-neutral-950 hover:underline"
+                          className="font-medium text-neutral-950 dark:text-neutral-100 hover:underline"
                         >
                           {item.name}
                         </Link>
                       </td>
 
-                      <td className="px-5 py-4 text-sm text-neutral-600">
+                      <td className="px-5 py-4 text-sm text-neutral-600 dark:text-neutral-400">
                         {item.unit}
                       </td>
 
                       <td className="px-5 py-4">
                         {item.requiredStorageType ? (
-                          <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600">
+                          <span className="inline-flex rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600 dark:text-neutral-400">
                             {
                               item.requiredStorageType
                             }
                           </span>
                         ) : (
-                          <span className="text-sm text-neutral-400">
+                          <span className="text-sm text-neutral-400 dark:text-neutral-500">
                             Any
                           </span>
                         )}
@@ -805,7 +805,7 @@ const ItemsPage = () => {
                       <td className="px-5 py-4 text-right">
                         <Link
                           href={`/items/${item.id}`}
-                          className="text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:underline"
+                          className="text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100 hover:underline"
                         >
                           View
                         </Link>
@@ -817,8 +817,8 @@ const ItemsPage = () => {
             </div>
 
             {pagination ? (
-              <div className="shrink-0 flex items-center justify-between gap-4 border-t border-neutral-200 px-5 py-3">
-                <p className="text-xs text-neutral-500">
+              <div className="shrink-0 flex items-center justify-between gap-4 border-t border-neutral-200 dark:border-neutral-800 px-5 py-3">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Showing {start}–{end} of{" "}
                   {pagination.total}
                 </p>
@@ -835,13 +835,13 @@ const ItemsPage = () => {
                       pagination.page <= 1 ||
                       isLoading
                     }
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-2.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     Previous
                   </button>
 
-                  <span className="text-xs text-neutral-600">
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">
                     Page {pagination.page} of{" "}
                     {pagination.totalPages}
                   </span>
@@ -861,7 +861,7 @@ const ItemsPage = () => {
                         pagination.totalPages ||
                       isLoading
                     }
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-2.5 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
                     <ArrowRight className="h-3.5 w-3.5" />

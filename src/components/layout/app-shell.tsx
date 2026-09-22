@@ -14,7 +14,7 @@ type AppShellProps = {
 
 export const AppShell = ({ children, user }: AppShellProps) => {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-neutral-50">
+    <div className="flex h-screen w-screen overflow-hidden bg-neutral-50 dark:bg-neutral-950">
       <Sidebar role={user.role} />
 
       <div className="flex min-w-0 flex-1 flex-col h-screen overflow-hidden">

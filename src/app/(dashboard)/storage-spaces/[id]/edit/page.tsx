@@ -190,16 +190,16 @@ const EditStorageSpacePage = () => {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
-        <div className="h-4 w-32 animate-pulse rounded bg-slate-200" />
+        <div className="h-4 w-32 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-        <div className="h-8 w-64 animate-pulse rounded bg-slate-200" />
+        <div className="h-8 w-64 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-        <div className="rounded-lg border border-slate-200 bg-white p-6">
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
           <div className="space-y-5">
             {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
-                className="h-10 animate-pulse rounded bg-slate-100"
+                className="h-10 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800 "
               />
             ))}
           </div>
@@ -213,19 +213,19 @@ const EditStorageSpacePage = () => {
       <div className="mx-auto max-w-2xl space-y-4">
         <Link
           href="/storage-spaces"
-          className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-950"
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100 "
         >
           <ArrowLeft className="h-4 w-4" />
           Back to storage spaces
         </Link>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
-          <h1 className="text-lg font-semibold text-slate-950">
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
+          <h1 className="text-lg font-semibold text-neutral-950 dark:text-neutral-100 ">
             Storage space not found
           </h1>
 
           {error && (
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400 ">
               {error}
             </p>
           )}
@@ -238,31 +238,31 @@ const EditStorageSpacePage = () => {
     <div className="mx-auto max-w-2xl space-y-6">
       <Link
         href={`/storage-spaces/${storageSpace.id}`}
-        className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors hover:text-slate-950"
+        className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 transition-colors hover:text-neutral-950 dark:hover:text-neutral-100 "
       >
         <ArrowLeft className="h-4 w-4" />
         Back to storage space
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100 ">
           Edit storage space
         </h1>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
           Update the configuration for {storageSpace.name}.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-lg border border-slate-200 bg-white"
+        className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       >
         <div className="space-y-5 p-6">
           {error && (
             <div
               role="alert"
-              className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="rounded-md border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
             >
               {error}
             </div>
@@ -271,7 +271,7 @@ const EditStorageSpacePage = () => {
           <div>
             <label
               htmlFor="name"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
+              className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
             >
               Name
             </label>
@@ -283,14 +283,14 @@ const EditStorageSpacePage = () => {
               onChange={(event) => setName(event.target.value)}
               maxLength={100}
               disabled={isSubmitting}
-              className="w-full rounded-md border border-slate-300 px-3 py-2.5 text-sm outline-none transition-colors focus:border-slate-500 focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+              className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 text-sm outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             />
           </div>
 
           <div>
             <label
               htmlFor="code"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
+              className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
             >
               Code
             </label>
@@ -302,7 +302,7 @@ const EditStorageSpacePage = () => {
               onChange={(event) => setCode(event.target.value)}
               maxLength={50}
               disabled={isSubmitting}
-              className="w-full rounded-md border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none transition-colors focus:border-slate-500 focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+              className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 text-sm uppercase outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             />
           </div>
 
@@ -310,7 +310,7 @@ const EditStorageSpacePage = () => {
             <div>
               <label
                 htmlFor="storageType"
-                className="mb-1.5 block text-sm font-medium text-slate-700"
+                className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
               >
                 Storage type
               </label>
@@ -324,14 +324,14 @@ const EditStorageSpacePage = () => {
                 }
                 maxLength={50}
                 disabled={isSubmitting}
-                className="w-full rounded-md border border-slate-300 px-3 py-2.5 text-sm outline-none transition-colors focus:border-slate-500 focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 text-sm outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
               />
             </div>
 
             <div>
               <label
                 htmlFor="capacity"
-                className="mb-1.5 block text-sm font-medium text-slate-700"
+                className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
               >
                 Capacity
               </label>
@@ -345,10 +345,10 @@ const EditStorageSpacePage = () => {
                   setCapacity(event.target.value)
                 }
                 disabled={isSubmitting}
-                className="w-full rounded-md border border-slate-300 px-3 py-2.5 text-sm outline-none transition-colors focus:border-slate-500 focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 text-sm outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
               />
 
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400 ">
                 Capacity cannot be lower than currently allocated
                 inventory.
               </p>
@@ -358,7 +358,7 @@ const EditStorageSpacePage = () => {
           <div>
             <label
               htmlFor="status"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
+              className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
             >
               Status
             </label>
@@ -372,7 +372,7 @@ const EditStorageSpacePage = () => {
                 )
               }
               disabled={isSubmitting}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-slate-500 focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+              className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
@@ -380,10 +380,10 @@ const EditStorageSpacePage = () => {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50/50 px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 px-6 py-4">
           <Link
             href={`/storage-spaces/${storageSpace.id}`}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            className="rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 "
           >
             Cancel
           </Link>
@@ -391,7 +391,7 @@ const EditStorageSpacePage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-md bg-neutral-950 dark:bg-neutral-100 px-4 py-2 text-sm font-medium text-white dark:text-neutral-950 transition-colors hover:bg-neutral-800 dark:hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Saving..." : "Save changes"}
           </button>

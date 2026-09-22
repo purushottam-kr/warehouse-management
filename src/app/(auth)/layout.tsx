@@ -9,7 +9,7 @@ type AuthLayoutProps = {
 const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <AuthPageGuard>
-      <main className="min-h-screen bg-slate-50">
+      <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <div className="mx-auto flex min-h-screen w-full max-w-md items-center px-6 py-12">
           {children}
         </div>

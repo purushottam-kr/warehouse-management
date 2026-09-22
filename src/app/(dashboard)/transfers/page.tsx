@@ -492,11 +492,11 @@ const TransfersWorkspace = () => {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
           Transfer inventory
         </h1>
 
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
           Move allocated inventory between storage
           spaces.
         </p>
@@ -505,23 +505,23 @@ const TransfersWorkspace = () => {
       {itemsError ? (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 "
         >
           {itemsError}
         </div>
       ) : null}
 
       {result ? (
-        <div className="rounded-xl border border-emerald-200 bg-white">
-          <div className="flex items-start gap-3 border-b border-neutral-100 px-5 py-4">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-white dark:bg-neutral-900">
+          <div className="flex items-start gap-3 border-b border-neutral-100 dark:border-neutral-800 px-5 py-4">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400 " />
 
             <div>
-              <h2 className="text-sm font-semibold text-neutral-950">
+              <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100">
                 Transfer successful
               </h2>
 
-              <p className="mt-1 text-sm text-neutral-500">
+              <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
                 {formatQuantity(
                   result.transfer.quantity,
                 )}{" "}
@@ -531,11 +531,11 @@ const TransfersWorkspace = () => {
           </div>
 
           <div className="px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Resulting quantities
             </p>
 
-            <ul className="mt-3 divide-y divide-neutral-100">
+            <ul className="mt-3 divide-y divide-neutral-100 dark:divide-neutral-800 ">
               {[
                 result.transfer.fromStorageSpaceId,
                 result.transfer.toStorageSpaceId,
@@ -569,18 +569,18 @@ const TransfersWorkspace = () => {
                     className="flex items-center justify-between gap-4 py-2.5"
                   >
                     <div>
-                      <p className="text-sm font-medium text-neutral-950">
+                      <p className="text-sm font-medium text-neutral-950 dark:text-neutral-100">
                         {name}
                       </p>
 
                       {code ? (
-                        <p className="mt-0.5 font-mono text-xs text-neutral-500">
+                        <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400 ">
                           {code}
                         </p>
                       ) : null}
                     </div>
 
-                    <p className="font-mono text-sm text-neutral-950">
+                    <p className="font-mono text-sm text-neutral-950 dark:text-neutral-100">
                       {formatQuantity(
                         before?.quantity ?? "0",
                       )}{" "}
@@ -594,20 +594,20 @@ const TransfersWorkspace = () => {
               })}
             </ul>
 
-            <p className="mt-3 text-xs text-neutral-500">
+            <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400 ">
               Quantities reflect the item&apos;s
               current allocation summary.
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-neutral-100 px-5 py-4">
+          <div className="flex items-center justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800 px-5 py-4">
             <button
               type="button"
               onClick={() => {
                 setResult(null);
                 setQuantity("");
               }}
-              className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
+              className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-950 dark:hover:text-neutral-100"
             >
               Transfer more
             </button>
@@ -615,7 +615,7 @@ const TransfersWorkspace = () => {
             {item ? (
               <Link
                 href={`/items/${item.id}`}
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 transition hover:bg-neutral-800 dark:hover:bg-white"
               >
                 View item
                 <ArrowRight className="h-4 w-4" />
@@ -626,13 +626,13 @@ const TransfersWorkspace = () => {
       ) : (
         <form
           onSubmit={handleTransfer}
-          className="rounded-xl border border-neutral-200 bg-white p-6"
+          className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6"
         >
           <div className="space-y-5">
             <div>
               <label
                 htmlFor="item"
-                className="mb-2 block text-sm font-medium text-neutral-800"
+                className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
               >
                 Item
               </label>
@@ -650,7 +650,7 @@ const TransfersWorkspace = () => {
                   isTransferring ||
                   items.length === 0
                 }
-                className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
               >
                 <option value="">
                   {isLoadingItems
@@ -670,19 +670,19 @@ const TransfersWorkspace = () => {
             </div>
 
             {isLoadingItem ? (
-              <div className="space-y-3 rounded-lg border border-neutral-200 p-4">
-                <div className="h-4 w-40 animate-pulse rounded bg-neutral-100" />
+              <div className="space-y-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+                <div className="h-4 w-40 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
 
-                <div className="h-3 w-24 animate-pulse rounded bg-neutral-100" />
+                <div className="h-3 w-24 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
 
-                <div className="h-16 animate-pulse rounded bg-neutral-100" />
+                <div className="h-16 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
               </div>
             ) : item ? (
               <>
                 <div>
                   <label
                     htmlFor="from"
-                    className="mb-2 block text-sm font-medium text-neutral-800"
+                    className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
                   >
                     From
                   </label>
@@ -700,7 +700,7 @@ const TransfersWorkspace = () => {
                       isLoadingSpaces ||
                       sourceLocations.length === 0
                     }
-                    className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                    className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
                   >
                     <option value="">
                       {isLoadingSpaces
@@ -734,12 +734,12 @@ const TransfersWorkspace = () => {
                   </select>
 
                   {fromSpaceId ? (
-                    <div className="mt-3 rounded-lg border border-neutral-200 p-4">
-                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
                         Available
                       </p>
 
-                      <p className="mt-1 text-lg font-semibold text-neutral-950">
+                      <p className="mt-1 text-lg font-semibold text-neutral-950 dark:text-neutral-100">
                         {formatQuantity(
                           sourceLocations.find(
                             (location) =>
@@ -747,12 +747,12 @@ const TransfersWorkspace = () => {
                               fromSpaceId,
                           )?.quantity ?? "0",
                         )}{" "}
-                        <span className="text-sm font-normal text-neutral-500">
+                        <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400 ">
                           {item.unit}
                         </span>
                       </p>
 
-                      <p className="mt-1 text-xs text-neutral-500">
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 ">
                         Currently allocated in{" "}
                         {
                           selectedFromSpace?.name ??
@@ -767,7 +767,7 @@ const TransfersWorkspace = () => {
                 <div>
                   <label
                     htmlFor="to"
-                    className="mb-2 block text-sm font-medium text-neutral-800"
+                    className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
                   >
                     To
                   </label>
@@ -785,7 +785,7 @@ const TransfersWorkspace = () => {
                       isLoadingSpaces ||
                       spaces.length === 0
                     }
-                    className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                    className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
                   >
                     <option value="">
                       {isLoadingSpaces
@@ -808,16 +808,16 @@ const TransfersWorkspace = () => {
                   </select>
 
                   {selectedToSpace ? (
-                    <div className="mt-3 rounded-lg border border-neutral-200 p-4">
-                      <p className="text-sm font-medium text-neutral-950">
+                    <div className="mt-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
+                      <p className="text-sm font-medium text-neutral-950 dark:text-neutral-100">
                         {selectedToSpace.name}
                       </p>
 
-                      <p className="mt-0.5 font-mono text-xs text-neutral-500">
+                      <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400 ">
                         {selectedToSpace.code}
                       </p>
 
-                      <p className="mt-2 text-xs text-neutral-500">
+                      <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 ">
                         {
                           warehouseNames.get(
                             selectedToSpace.warehouseId,
@@ -836,7 +836,7 @@ const TransfersWorkspace = () => {
                 <div>
                   <label
                     htmlFor="quantity"
-                    className="mb-2 block text-sm font-medium text-neutral-800"
+                    className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
                   >
                     Quantity
                   </label>
@@ -851,14 +851,14 @@ const TransfersWorkspace = () => {
                     }
                     placeholder="25.000"
                     disabled={isTransferring}
-                    className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-neutral-950 outline-none placeholder:font-sans placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+                    className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 font-mono text-sm text-neutral-950 dark:text-neutral-100 outline-none placeholder:font-sans placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
                   />
                 </div>
 
                 {inventoryError ? (
                   <p
                     role="alert"
-                    className="text-xs text-red-600"
+                    className="text-xs text-red-600 dark:text-red-400 "
                   >
                     {inventoryError}
                   </p>
@@ -867,7 +867,7 @@ const TransfersWorkspace = () => {
                 {formError ? (
                   <div
                     role="alert"
-                    className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                    className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-3 py-2.5 text-sm text-red-700 dark:text-red-300 "
                   >
                     {formError}
                   </div>
@@ -876,12 +876,12 @@ const TransfersWorkspace = () => {
             ) : itemError ? (
               <div
                 role="alert"
-                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-3 py-2.5 text-sm text-red-700 dark:text-red-300 "
               >
                 {itemError}
               </div>
             ) : (
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 ">
                 Select an item to choose source and
                 destination storage spaces.
               </p>
@@ -889,7 +889,7 @@ const TransfersWorkspace = () => {
           </div>
 
           {item ? (
-            <div className="mt-6 flex items-center justify-end border-t border-neutral-100 pt-5">
+            <div className="mt-6 flex items-center justify-end border-t border-neutral-100 dark:border-neutral-800 pt-5">
               <button
                 type="submit"
                 disabled={
@@ -898,7 +898,7 @@ const TransfersWorkspace = () => {
                   !toSpaceId ||
                   fromSpaceId === toSpaceId
                 }
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isTransferring ? (
                   "Transferring..."
@@ -922,9 +922,9 @@ const TransfersPage = () => {
     <Suspense
       fallback={
         <div className="max-w-2xl space-y-6">
-          <div className="h-8 w-56 animate-pulse rounded bg-neutral-200" />
+          <div className="h-8 w-56 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 bg-white" />
+          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
         </div>
       }
     >

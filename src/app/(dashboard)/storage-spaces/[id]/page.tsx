@@ -197,14 +197,14 @@ const StorageSpaceDetailPage = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-4 w-24 animate-pulse rounded bg-slate-200" />
-        <div className="h-8 w-72 animate-pulse rounded bg-slate-200" />
+        <div className="h-4 w-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
+        <div className="h-8 w-72 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
 
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="h-24 animate-pulse rounded-lg border border-slate-200 bg-white"
+              className="h-24 animate-pulse rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
             />
           ))}
         </div>
@@ -217,17 +217,17 @@ const StorageSpaceDetailPage = () => {
       <div className="space-y-4">
         <Link
           href="/storage-spaces"
-          className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-950"
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to storage spaces
         </Link>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
-          <h1 className="text-lg font-semibold text-slate-950">
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
+          <h1 className="text-lg font-semibold text-neutral-950 dark:text-neutral-100">
             Storage space not found
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 ">
             The storage space may have been deleted or is no longer available.
           </p>
         </div>
@@ -239,7 +239,7 @@ const StorageSpaceDetailPage = () => {
     <div className="space-y-6">
       <Link
         href="/storage-spaces"
-        className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors hover:text-slate-950"
+        className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 transition-colors hover:text-neutral-950 dark:hover:text-neutral-100"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to storage spaces
@@ -248,22 +248,22 @@ const StorageSpaceDetailPage = () => {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
               {storageSpace.name}
             </h1>
 
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                 storageSpace.status === "ACTIVE"
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-slate-100 text-slate-600"
+                  ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
               }`}
             >
               {storageSpace.status}
             </span>
           </div>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
             {warehouseName} · {storageSpace.code}
           </p>
         </div>
@@ -271,7 +271,7 @@ const StorageSpaceDetailPage = () => {
         <div className="flex items-center gap-2">
           <Link
             href={`/storage-spaces/${storageSpace.id}/edit`}
-            className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 "
           >
             <Pencil className="h-4 w-4" />
             Edit
@@ -282,7 +282,7 @@ const StorageSpaceDetailPage = () => {
               type="button"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="inline-flex items-center gap-2 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-md border border-red-200 dark:border-red-900 bg-white dark:bg-neutral-900 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />
               {isDeleting ? "Deleting..." : "Delete"}
@@ -292,85 +292,85 @@ const StorageSpaceDetailPage = () => {
       </div>
 
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-md border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300 ">
           {error}
         </div>
       )}
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-sm font-semibold text-slate-950">
+      <section className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="border-b border-neutral-200 dark:border-neutral-800 px-5 py-4">
+          <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100">
             Storage space details
           </h2>
         </div>
 
-        <div className="grid gap-px bg-slate-200 md:grid-cols-2">
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <div className="grid gap-px bg-neutral-200 dark:bg-neutral-700 md:grid-cols-2">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Warehouse
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
               {warehouseName}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Storage type
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
               {formatStorageType(storageSpace.storageType)}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Capacity
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
               {formatCapacity(storageSpace.capacity)}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Status
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
               {storageSpace.status}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Created
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
               {formatDate(storageSpace.createdAt)}
             </p>
           </div>
 
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Last updated
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-950">
+            <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
               {formatDate(storageSpace.updatedAt)}
             </p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-sm font-semibold text-slate-950">Inventory</h2>
+      <section className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="border-b border-neutral-200 dark:border-neutral-800 px-5 py-4">
+          <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100">Inventory</h2>
         </div>
 
         <div className="px-5 py-10 text-center">
-          <p className="text-sm font-medium text-slate-700">
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             Inventory details will appear here.
           </p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
             Item-level allocation data will be added when the inventory view is
             connected.
           </p>

@@ -206,11 +206,11 @@ const WarehouseDetailPage = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-4 w-24 animate-pulse rounded bg-neutral-200" />
+        <div className="h-4 w-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-        <div className="h-28 animate-pulse rounded-xl bg-white" />
+        <div className="h-28 animate-pulse rounded-xl bg-white dark:bg-neutral-900" />
 
-        <div className="h-64 animate-pulse rounded-xl bg-white" />
+        <div className="h-64 animate-pulse rounded-xl bg-white dark:bg-neutral-900" />
       </div>
     );
   }
@@ -220,7 +220,7 @@ const WarehouseDetailPage = () => {
       <div className="space-y-4">
         <Link
           href="/warehouses"
-          className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-950"
+          className="inline-flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100 "
         >
           <ArrowLeft className="h-4 w-4" />
           Warehouses
@@ -228,7 +228,7 @@ const WarehouseDetailPage = () => {
 
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300"
         >
           {error}
         </div>
@@ -253,7 +253,7 @@ const WarehouseDetailPage = () => {
       <div>
         <Link
           href="/warehouses"
-          className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-950"
+          className="inline-flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100 "
         >
           <ArrowLeft className="h-4 w-4" />
           Warehouses
@@ -263,30 +263,30 @@ const WarehouseDetailPage = () => {
       {error ? (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-4 py-3 text-sm text-red-700 dark:text-red-300"
         >
           {error}
         </div>
       ) : null}
 
-      <section className="rounded-xl border border-neutral-200 bg-white">
+      <section className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
         <div className="flex items-start justify-between gap-6 p-6">
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
-              <WarehouseIcon className="h-5 w-5 text-neutral-600" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800">
+              <WarehouseIcon className="h-5 w-5 text-neutral-600 dark:text-neutral-400 " />
             </div>
 
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-xl font-semibold tracking-tight text-neutral-950">
+                <h1 className="text-xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100 ">
                   {warehouse.name}
                 </h1>
 
                 <span
                   className={
                     warehouse.status === "ACTIVE"
-                      ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
-                      : "inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600"
+                      ? "inline-flex rounded-full bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 "
+                      : "inline-flex rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 "
                   }
                 >
                   {warehouse.status === "ACTIVE"
@@ -295,12 +295,12 @@ const WarehouseDetailPage = () => {
                 </span>
               </div>
 
-              <p className="mt-1 font-mono text-sm text-neutral-500">
+              <p className="mt-1 font-mono text-sm text-neutral-500 dark:text-neutral-400">
                 {warehouse.code}
               </p>
 
               {warehouse.address ? (
-                <p className="mt-3 text-sm text-neutral-600">
+                <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 ">
                   {warehouse.address}
                 </p>
               ) : null}
@@ -310,7 +310,7 @@ const WarehouseDetailPage = () => {
           <div className="flex shrink-0 items-center gap-2">
             <Link
               href={`/warehouses/${warehouse.id}/edit`}
-              className="inline-flex h-9 items-center rounded-lg border border-neutral-300 px-3.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+              className="inline-flex h-9 items-center rounded-lg border border-neutral-300 dark:border-neutral-700 px-3.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 "
             >
               Edit
             </Link>
@@ -320,7 +320,7 @@ const WarehouseDetailPage = () => {
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="inline-flex h-9 items-center rounded-lg border border-red-200 px-3.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-9 items-center rounded-lg border border-red-200 dark:border-red-900 px-3.5 text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
@@ -330,50 +330,50 @@ const WarehouseDetailPage = () => {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-neutral-200 bg-white p-5">
-          <p className="text-sm text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             Total capacity
           </p>
 
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100 ">
             {formatCapacity(String(totalCapacity))}
           </p>
 
-          <p className="mt-1 text-xs text-neutral-400">
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500 ">
             Sum of all storage-space capacities
           </p>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-5">
-          <p className="text-sm text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             Storage spaces
           </p>
 
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100 ">
             {storageSpaces.length}
           </p>
 
-          <p className="mt-1 text-xs text-neutral-400">
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500 ">
             Configured storage locations
           </p>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
+      <section className="overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 px-5 py-4">
           <div>
-            <h2 className="text-sm font-semibold text-neutral-950">
+            <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100 ">
               Storage spaces
             </h2>
 
-            <p className="mt-0.5 text-xs text-neutral-500">
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
               Storage locations within this warehouse.
             </p>
           </div>
 
           <Link
             href={`/storage-spaces/new?warehouse=${warehouse.id}`}
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 px-3.5 text-sm font-medium text-white hover:bg-neutral-800"
+            className="inline-flex h-9 items-center gap-2 rounded-lg bg-neutral-950 dark:bg-neutral-100 px-3.5 text-sm font-medium text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-white "
           >
             <Plus className="h-4 w-4" />
             Add space
@@ -382,18 +382,18 @@ const WarehouseDetailPage = () => {
 
         {storageSpaces.length === 0 ? (
           <div className="flex min-h-48 flex-col items-center justify-center px-6 text-center">
-            <h3 className="text-sm font-medium text-neutral-950">
+            <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-100 ">
               No storage spaces
             </h3>
 
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
               Add a storage space to define where inventory
               can be placed.
             </p>
 
             <Link
               href={`/storage-spaces/new?warehouse=${warehouse.id}`}
-              className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 px-3.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+              className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 px-3.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 "
             >
               <Plus className="h-4 w-4" />
               Add storage space
@@ -403,48 +403,48 @@ const WarehouseDetailPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[680px]">
               <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50/70">
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/70">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Name
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Code
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Storage type
                   </th>
 
-                  <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Capacity
                   </th>
 
-                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Status
                   </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 ">
                 {storageSpaces.map((storageSpace) => (
                   <tr
                     key={storageSpace.id}
-                    className="hover:bg-neutral-50"
+                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800 "
                   >
-                    <td className="px-5 py-4 text-sm font-medium text-neutral-950">
+                    <td className="px-5 py-4 text-sm font-medium text-neutral-950 dark:text-neutral-100 ">
                       {storageSpace.name}
                     </td>
 
-                    <td className="px-5 py-4 font-mono text-sm text-neutral-600">
+                    <td className="px-5 py-4 font-mono text-sm text-neutral-600 dark:text-neutral-400 ">
                       {storageSpace.code}
                     </td>
 
-                    <td className="px-5 py-4 text-sm text-neutral-600">
+                    <td className="px-5 py-4 text-sm text-neutral-600 dark:text-neutral-400 ">
                       {storageSpace.storageType}
                     </td>
 
-                    <td className="px-5 py-4 text-right font-mono text-sm text-neutral-700">
+                    <td className="px-5 py-4 text-right font-mono text-sm text-neutral-700 dark:text-neutral-300">
                       {formatCapacity(storageSpace.capacity)}
                     </td>
 
@@ -452,8 +452,8 @@ const WarehouseDetailPage = () => {
                       <span
                         className={
                           storageSpace.status === "ACTIVE"
-                            ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
-                            : "inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600"
+                            ? "inline-flex rounded-full bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 "
+                            : "inline-flex rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 "
                         }
                       >
                         {storageSpace.status === "ACTIVE"

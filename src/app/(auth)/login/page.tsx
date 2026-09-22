@@ -52,11 +52,11 @@ const LoginPage = () => {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
           Sign in
         </h1>
 
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 ">
           Sign in to manage your warehouse inventory.
         </p>
       </div>
@@ -68,7 +68,7 @@ const LoginPage = () => {
         <div>
           <label
             htmlFor="email"
-            className="mb-2 block text-sm font-medium text-slate-700"
+            className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300 "
           >
             Email
           </label>
@@ -80,7 +80,7 @@ const LoginPage = () => {
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-1 focus:ring-slate-950"
+            className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none transition placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 "
             placeholder="you@example.com"
           />
         </div>
@@ -88,7 +88,7 @@ const LoginPage = () => {
         <div>
           <label
             htmlFor="password"
-            className="mb-2 block text-sm font-medium text-slate-700"
+            className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300 "
           >
             Password
           </label>
@@ -100,7 +100,7 @@ const LoginPage = () => {
             onChange={(event) => setPassword(event.target.value)}
             required
             autoComplete="current-password"
-            className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-1 focus:ring-slate-950"
+            className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none transition placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 "
             placeholder="Enter your password"
           />
         </div>
@@ -108,7 +108,7 @@ const LoginPage = () => {
         {error ? (
           <div
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+            className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-3 py-2.5 text-sm text-red-700 dark:text-red-300 "
           >
             {error}
           </div>
@@ -117,17 +117,17 @@ const LoginPage = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 w-full rounded-lg bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-11 w-full rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 transition hover:bg-neutral-800 dark:hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400 ">
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-slate-950 hover:underline"
+          className="font-medium text-neutral-950 dark:text-neutral-100 hover:underline"
         >
           Create one
         </Link>

@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+/*
+ * Class-based dark mode (Tailwind v4): `dark:` variants respond
+ * to `.dark` on <html>, which the theme provider controls and
+ * persists. This replaces the default prefers-color-scheme variant.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+/*
+ * Driven by the same `.dark` class so the body backdrop always
+ * matches the Tailwind theme (system preference is resolved in
+ * JS and reflected as the class before first paint).
+ */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -10,13 +27,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {

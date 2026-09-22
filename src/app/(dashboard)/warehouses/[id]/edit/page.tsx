@@ -167,17 +167,17 @@ const EditWarehousePage = () => {
   if (isLoading) {
     return (
       <div className="max-w-2xl space-y-6">
-        <div className="h-4 w-24 animate-pulse rounded bg-neutral-200" />
+        <div className="h-4 w-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-        <div className="h-8 w-64 animate-pulse rounded bg-neutral-200" />
+        <div className="h-8 w-64 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700 " />
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-6">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
           <div className="space-y-5">
             {Array.from({ length: 4 }).map(
               (_, index) => (
                 <div
                   key={index}
-                  className="h-11 animate-pulse rounded-lg bg-neutral-100"
+                  className="h-11 animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800"
                 />
               ),
             )}
@@ -192,18 +192,18 @@ const EditWarehousePage = () => {
       <div className="max-w-2xl space-y-4">
         <Link
           href="/warehouses"
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-950"
+          className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to warehouses
         </Link>
 
-        <div className="rounded-lg border border-neutral-200 bg-white p-8 text-center">
-          <h1 className="text-lg font-semibold text-neutral-950">
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
+          <h1 className="text-lg font-semibold text-neutral-950 dark:text-neutral-100">
             Warehouse not found
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             {error ||
               "The warehouse may have been deleted or is no longer available."}
           </p>
@@ -216,20 +216,20 @@ const EditWarehousePage = () => {
     <div className="max-w-2xl space-y-6">
       <Link
         href={`/warehouses/${warehouse.id}`}
-        className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-950"
+        className="inline-flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to warehouse
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
           Edit warehouse
         </h1>
 
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Update the configuration for{" "}
-          <span className="font-medium text-neutral-950">
+          <span className="font-medium text-neutral-950 dark:text-neutral-100">
             {warehouse.name}
           </span>
           .
@@ -238,13 +238,13 @@ const EditWarehousePage = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border border-neutral-200 bg-white p-6"
+        className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6"
       >
         <div className="space-y-5">
           {error ? (
             <div
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+              className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 px-3 py-2.5 text-sm text-red-700 dark:text-red-300 "
             >
               {error}
             </div>
@@ -253,7 +253,7 @@ const EditWarehousePage = () => {
           <div>
             <label
               htmlFor="name"
-              className="mb-2 block text-sm font-medium text-neutral-800"
+              className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
             >
               Name
             </label>
@@ -268,14 +268,14 @@ const EditWarehousePage = () => {
               required
               maxLength={100}
               disabled={isSubmitting}
-              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+              className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             />
           </div>
 
           <div>
             <label
               htmlFor="code"
-              className="mb-2 block text-sm font-medium text-neutral-800"
+              className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
             >
               Code
             </label>
@@ -290,10 +290,10 @@ const EditWarehousePage = () => {
               required
               maxLength={50}
               disabled={isSubmitting}
-              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+              className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 font-mono text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             />
 
-            <p className="mt-1.5 text-xs text-neutral-500">
+            <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
               Must be unique across all warehouses.
             </p>
           </div>
@@ -301,10 +301,10 @@ const EditWarehousePage = () => {
           <div>
             <label
               htmlFor="address"
-              className="mb-2 block text-sm font-medium text-neutral-800"
+              className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
             >
               Address
-              <span className="ml-1 font-normal text-neutral-400">
+              <span className="ml-1 font-normal text-neutral-400 dark:text-neutral-500 ">
                 Optional
               </span>
             </label>
@@ -318,10 +318,10 @@ const EditWarehousePage = () => {
               rows={3}
               maxLength={255}
               disabled={isSubmitting}
-              className="w-full resize-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+              className="w-full resize-none rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2.5 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             />
 
-            <p className="mt-1.5 text-xs text-neutral-500">
+            <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
               Leave empty to remove the address.
             </p>
           </div>
@@ -329,7 +329,7 @@ const EditWarehousePage = () => {
           <div>
             <label
               htmlFor="status"
-              className="mb-2 block text-sm font-medium text-neutral-800"
+              className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
             >
               Status
             </label>
@@ -343,7 +343,7 @@ const EditWarehousePage = () => {
                 )
               }
               disabled={isSubmitting}
-              className="h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:cursor-not-allowed disabled:bg-neutral-50"
+              className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">
@@ -351,17 +351,17 @@ const EditWarehousePage = () => {
               </option>
             </select>
 
-            <p className="mt-1.5 text-xs text-neutral-500">
+            <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
               Inactive warehouses are excluded from
               new inventory allocations.
             </p>
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3 border-t border-neutral-100 pt-5">
+        <div className="mt-6 flex items-center justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800 pt-5">
           <Link
             href={`/warehouses/${warehouse.id}`}
-            className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
+            className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-950 dark:hover:text-neutral-100"
           >
             Cancel
           </Link>
@@ -369,7 +369,7 @@ const EditWarehousePage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex h-10 items-center rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-10 items-center rounded-lg bg-neutral-950 dark:bg-neutral-100 px-4 text-sm font-medium text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting
               ? "Saving..."

@@ -31,19 +31,19 @@ const formatMovementType = (type: "ALLOCATE" | "MOVE" | "RELEASE") => {
   switch (type) {
     case "ALLOCATE":
       return (
-        <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+        <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20 dark:ring-emerald-400/30 ">
           ALLOCATE
         </span>
       );
     case "MOVE":
       return (
-        <span className="inline-flex items-center rounded-md bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-600/20">
+        <span className="inline-flex items-center rounded-md bg-sky-50 dark:bg-sky-950 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:text-sky-300 ring-1 ring-inset ring-sky-600/20 dark:ring-sky-400/30 ">
           MOVE
         </span>
       );
     case "RELEASE":
       return (
-        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">
+        <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-inset ring-amber-600/20 dark:ring-amber-400/30 ">
           RELEASE
         </span>
       );
@@ -87,13 +87,13 @@ const DashboardPage = () => {
       {/* Header & Title */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Operational Overview
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950">
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             Dashboard
           </h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             Real-time summary of warehouse capacity, stock distribution, and activity history.
           </p>
         </div>
@@ -101,7 +101,7 @@ const DashboardPage = () => {
         <button
           onClick={fetchDashboard}
           disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-700 shadow-xs hover:bg-neutral-50 focus:outline-hidden disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3.5 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 shadow-xs hover:bg-neutral-50 dark:hover:bg-neutral-800 focus:outline-hidden disabled:opacity-50"
         >
           <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           Refresh
@@ -109,11 +109,11 @@ const DashboardPage = () => {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50/50 p-4 text-sm text-red-800">
+        <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/50 p-4 text-sm text-red-800 dark:text-red-300">
           <p className="font-medium">{error}</p>
           <button
             onClick={fetchDashboard}
-            className="mt-2 text-xs font-semibold text-red-700 underline underline-offset-2 hover:text-red-900"
+            className="mt-2 text-xs font-semibold text-red-700 dark:text-red-300 underline underline-offset-2 hover:text-red-900 dark:hover:text-red-300 "
           >
             Try again
           </button>
@@ -121,16 +121,16 @@ const DashboardPage = () => {
       )}
 
       {/* Quick Operational Actions Bar */}
-      <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <div className="rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-neutral-900 p-5 shadow-2xs">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
           Quick Operational Actions
         </h2>
         <div className="mt-3.5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <Link
             href="/allocations"
-            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:border-neutral-300 hover:bg-neutral-100/80"
+            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-neutral-100 transition-colors hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 "
           >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
               <ClipboardList className="h-4 w-4" />
             </div>
             <span>Allocate inventory</span>
@@ -138,9 +138,9 @@ const DashboardPage = () => {
 
           <Link
             href="/transfers"
-            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:border-neutral-300 hover:bg-neutral-100/80"
+            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-neutral-100 transition-colors hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 "
           >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-100 text-sky-700">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
               <ArrowLeftRight className="h-4 w-4" />
             </div>
             <span>Transfer inventory</span>
@@ -148,9 +148,9 @@ const DashboardPage = () => {
 
           <Link
             href="/releases"
-            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:border-neutral-300 hover:bg-neutral-100/80"
+            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-neutral-100 transition-colors hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 "
           >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
               <PackageOpen className="h-4 w-4" />
             </div>
             <span>Release inventory</span>
@@ -158,7 +158,7 @@ const DashboardPage = () => {
 
           <Link
             href="/items/new"
-            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:border-neutral-300 hover:bg-neutral-100/80"
+            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-neutral-100 transition-colors hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 "
           >
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-indigo-100 text-indigo-700">
               <Plus className="h-4 w-4" />
@@ -168,7 +168,7 @@ const DashboardPage = () => {
 
           <Link
             href="/warehouses/new"
-            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:border-neutral-300 hover:bg-neutral-100/80"
+            className="flex items-center gap-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 px-3.5 py-2.5 text-sm font-medium text-neutral-900 dark:text-neutral-100 transition-colors hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 "
           >
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-purple-100 text-purple-700">
               <Warehouse className="h-4 w-4" />
@@ -181,67 +181,67 @@ const DashboardPage = () => {
       {/* 1. Inventory Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         {/* Total Warehouses */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
             <span className="text-xs font-medium">Total warehouses</span>
-            <Warehouse className="h-4 w-4 text-neutral-400" />
+            <Warehouse className="h-4 w-4 text-neutral-400 dark:text-neutral-500 " />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             {isLoading ? "—" : formatNumber(data?.summary.totalWarehouses ?? 0)}
           </p>
         </div>
 
         {/* Active Warehouses */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
             <span className="text-xs font-medium">Active warehouses</span>
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 " />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             {isLoading ? "—" : formatNumber(data?.summary.activeWarehouses ?? 0)}
           </p>
         </div>
 
         {/* Total Items */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
             <span className="text-xs font-medium">Total items</span>
-            <Package className="h-4 w-4 text-neutral-400" />
+            <Package className="h-4 w-4 text-neutral-400 dark:text-neutral-500 " />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             {isLoading ? "—" : formatNumber(data?.summary.totalItems ?? 0)}
           </p>
         </div>
 
         {/* Items Holding Inventory */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
             <span className="text-xs font-medium">Holding inventory</span>
-            <ClipboardList className="h-4 w-4 text-emerald-600" />
+            <ClipboardList className="h-4 w-4 text-emerald-600 dark:text-emerald-400 " />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             {isLoading ? "—" : formatNumber(data?.summary.itemsWithInventory ?? 0)}
           </p>
         </div>
 
         {/* Total Storage Spaces */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
             <span className="text-xs font-medium">Total storage spaces</span>
-            <Boxes className="h-4 w-4 text-neutral-400" />
+            <Boxes className="h-4 w-4 text-neutral-400 dark:text-neutral-500 " />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             {isLoading ? "—" : formatNumber(data?.summary.totalStorageSpaces ?? 0)}
           </p>
         </div>
 
         {/* Active Storage Spaces */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-neutral-500">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-2xs">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
             <span className="text-xs font-medium">Active spaces</span>
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 " />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
             {isLoading ? "—" : formatNumber(data?.summary.activeStorageSpaces ?? 0)}
           </p>
         </div>
@@ -251,19 +251,19 @@ const DashboardPage = () => {
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Left Column: Warehouse Capacity (7 cols) */}
         <div className="space-y-6 lg:col-span-7">
-          <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-2xs">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-2xs">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-4">
               <div>
-                <h2 className="text-base font-semibold text-neutral-950">
+                <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-100">
                   Warehouse capacity
                 </h2>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                   Capacity utilization derived strictly from live allocations.
                 </p>
               </div>
               <Link
                 href="/warehouses"
-                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 hover:text-neutral-900"
+                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
               >
                 <span>All warehouses</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -274,17 +274,17 @@ const DashboardPage = () => {
               <div className="mt-4 space-y-4">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse space-y-2 py-2">
-                    <div className="h-4 w-32 rounded-sm bg-neutral-100" />
-                    <div className="h-3 w-full rounded-sm bg-neutral-100" />
+                    <div className="h-4 w-32 rounded-sm bg-neutral-100 dark:bg-neutral-800" />
+                    <div className="h-3 w-full rounded-sm bg-neutral-100 dark:bg-neutral-800" />
                   </div>
                 ))}
               </div>
             ) : !data?.warehouseCapacities || data.warehouseCapacities.length === 0 ? (
-              <div className="py-12 text-center text-sm text-neutral-500">
+              <div className="py-12 text-center text-sm text-neutral-500 dark:text-neutral-400">
                 No active warehouses found.
               </div>
             ) : (
-              <div className="mt-5 space-y-5 divide-y divide-neutral-100">
+              <div className="mt-5 space-y-5 divide-y divide-neutral-100 dark:divide-neutral-800 ">
                 {data.warehouseCapacities.map((wh) => {
                   const pct = wh.capacityPercentage;
                   const isHigh = pct >= 85;
@@ -296,21 +296,21 @@ const DashboardPage = () => {
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/warehouses/${wh.id}`}
-                            className="font-medium text-neutral-950 hover:underline"
+                            className="font-medium text-neutral-950 dark:text-neutral-100 hover:underline"
                           >
                             {wh.name}
                           </Link>
-                          <span className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-[11px] font-mono text-neutral-600">
+                          <span className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 text-[11px] font-mono text-neutral-600 dark:text-neutral-400">
                             {wh.code}
                           </span>
                         </div>
                         <span
                           className={`text-sm font-semibold font-mono ${
                             isHigh
-                              ? "text-red-600"
+                              ? "text-red-600 dark:text-red-400 "
                               : isModerate
-                              ? "text-amber-600"
-                              : "text-neutral-900"
+                              ? "text-amber-600 dark:text-amber-400 "
+                              : "text-neutral-900 dark:text-neutral-100"
                           }`}
                         >
                           {pct.toFixed(1)}%
@@ -318,20 +318,20 @@ const DashboardPage = () => {
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-neutral-100">
+                      <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                         <div
                           className={`h-full transition-all duration-300 ${
                             isHigh
-                              ? "bg-red-500"
+                              ? "bg-red-50 dark:bg-red-950 0"
                               : isModerate
-                              ? "bg-amber-500"
-                              : "bg-neutral-900"
+                              ? "bg-amber-500 dark:bg-amber-400 "
+                              : "bg-neutral-900 dark:bg-neutral-100 "
                           }`}
                           style={{ width: `${Math.min(pct, 100)}%` }}
                         />
                       </div>
 
-                      <div className="mt-1.5 flex justify-between text-xs text-neutral-500 font-mono">
+                      <div className="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400 font-mono">
                         <span>
                           {formatNumber(wh.allocatedQuantity)} / {formatNumber(wh.totalCapacity)} units
                         </span>
@@ -356,26 +356,26 @@ const DashboardPage = () => {
         {/* Right Column: Low-capacity alerts & Recent activity (5 cols) */}
         <div className="space-y-6 lg:col-span-5">
           {/* 3. Low-capacity alerts */}
-          <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-2xs">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3.5">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-2xs">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3.5">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
-                <h2 className="text-base font-semibold text-neutral-950">
+                <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-400 " />
+                <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-100">
                   Capacity alerts
                 </h2>
               </div>
-              <span className="text-xs text-neutral-500">≥ 75% utilized</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">≥ 75% utilized</span>
             </div>
 
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-10 w-full animate-pulse rounded-md bg-neutral-100" />
+                  <div key={i} className="h-10 w-full animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-800" />
                 ))}
               </div>
             ) : !data?.lowCapacityAlerts || data.lowCapacityAlerts.length === 0 ? (
-              <div className="flex items-center gap-2.5 py-6 text-sm text-neutral-600">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="flex items-center gap-2.5 py-6 text-sm text-neutral-600 dark:text-neutral-400">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 " />
                 <span>All storage locations have healthy available capacity.</span>
               </div>
             ) : (
@@ -383,23 +383,23 @@ const DashboardPage = () => {
                 {data.lowCapacityAlerts.map((alert) => (
                   <div
                     key={`${alert.type}-${alert.id}`}
-                    className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50/60 p-3"
+                    className="flex items-center justify-between rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 p-3"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-neutral-950">
+                        <span className="text-sm font-medium text-neutral-950 dark:text-neutral-100">
                           {alert.name}
                         </span>
-                        <span className="rounded-md bg-neutral-200/70 px-1.5 py-0.5 text-[10px] font-medium uppercase text-neutral-600">
+                        <span className="rounded-md bg-neutral-200/70 dark:bg-neutral-700/70 px-1.5 py-0.5 text-[10px] font-medium uppercase text-neutral-600 dark:text-neutral-400">
                           {alert.type === "WAREHOUSE" ? "Warehouse" : "Space"}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-neutral-500 font-mono">
+                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 font-mono">
                         {formatNumber(alert.allocatedQuantity)} / {formatNumber(alert.totalCapacity)} units
                       </p>
                     </div>
 
-                    <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-bold text-red-700 font-mono">
+                    <span className="rounded-md bg-red-100 dark:bg-red-950 px-2 py-1 text-xs font-bold text-red-700 dark:text-red-300 font-mono">
                       {alert.capacityPercentage.toFixed(1)}%
                     </span>
                   </div>
@@ -409,17 +409,17 @@ const DashboardPage = () => {
           </div>
 
           {/* 4. Recent activity */}
-          <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-2xs">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3.5">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-2xs">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3.5">
               <div className="flex items-center gap-2">
-                <History className="h-4 w-4 text-neutral-500" />
-                <h2 className="text-base font-semibold text-neutral-950">
+                <History className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-100">
                   Recent activity
                 </h2>
               </div>
               <Link
                 href="/activity"
-                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 hover:text-neutral-900"
+                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
               >
                 <span>Full history</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -429,11 +429,11 @@ const DashboardPage = () => {
             {isLoading ? (
               <div className="mt-4 space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 w-full animate-pulse rounded-md bg-neutral-100" />
+                  <div key={i} className="h-12 w-full animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-800" />
                 ))}
               </div>
             ) : !data?.recentActivity || data.recentActivity.length === 0 ? (
-              <div className="py-8 text-center text-sm text-neutral-500">
+              <div className="py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                 No inventory movement history yet.
               </div>
             ) : (
@@ -441,21 +441,21 @@ const DashboardPage = () => {
                 {data.recentActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex flex-col gap-1 rounded-lg border border-neutral-100 bg-neutral-50/40 p-3 text-xs"
+                    className="flex flex-col gap-1 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-900/40 p-3 text-xs"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {formatMovementType(activity.type)}
-                        <span className="font-mono font-medium text-neutral-900">
+                        <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
                           {activity.item.sku}
                         </span>
                       </div>
-                      <span className="font-mono font-semibold text-neutral-950">
+                      <span className="font-mono font-semibold text-neutral-950 dark:text-neutral-100">
                         {formatNumber(activity.quantity)} {activity.item.unit}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-neutral-500">
+                    <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                       <span>
                         {activity.type === "ALLOCATE" && activity.to && (
                           <>To {activity.to.name} ({activity.to.warehouseName})</>
