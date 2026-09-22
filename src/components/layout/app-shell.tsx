@@ -23,7 +23,7 @@ export const AppShell = ({ children, user }: AppShellProps) => {
           role={user.role}
         />
 
-        <main className="min-w-0 flex-1 flex flex-col overflow-hidden p-6">
+        <main className="min-w-0 flex-1 flex flex-col overflow-x-hidden overflow-y-auto p-6">
           {children}
         </main>
       </div>

@@ -19,8 +19,20 @@ type StorageSpace = {
   updatedAt: string;
 };
 
+type InventoryRow = {
+  itemId: string;
+  itemName: string;
+  sku: string;
+  unit: string;
+  quantity: string;
+};
+
 type ApiResponse = {
   data: StorageSpace;
+};
+
+type InventoryResponse = {
+  data: InventoryRow[];
 };
 
 type ApiErrorResponse = {
@@ -63,6 +75,7 @@ const StorageSpaceDetailPage = () => {
 
   const [storageSpace, setStorageSpace] = useState<StorageSpace | null>(null);
   const [warehouseName, setWarehouseName] = useState("");
+  const [inventory, setInventory] = useState<InventoryRow[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +87,12 @@ const StorageSpaceDetailPage = () => {
       try {
         setError("");
 
-        const [storageResponse, warehouseResponse, userResponse] =
+        const [
+          storageResponse,
+          warehouseResponse,
+          userResponse,
+          inventoryResponse,
+        ] =
           await Promise.all([
             fetch(`/api/storage-spaces/${params.id}`, {
               cache: "no-store",
@@ -83,6 +101,9 @@ const StorageSpaceDetailPage = () => {
               cache: "no-store",
             }),
             fetch("/api/auth/me", {
+              cache: "no-store",
+            }),
+            fetch(`/api/storage-spaces/${params.id}/inventory`, {
               cache: "no-store",
             }),
           ]);
@@ -104,6 +125,11 @@ const StorageSpaceDetailPage = () => {
         const userData =
           (await userResponse.json()) as UserResponse | ApiErrorResponse;
 
+        const inventoryData =
+          (await inventoryResponse.json()) as
+            | InventoryResponse
+            | ApiErrorResponse;
+
         if (!storageResponse.ok) {
           throw new Error(
             "error" in storageData
@@ -120,10 +146,20 @@ const StorageSpaceDetailPage = () => {
           throw new Error("Unable to load user information.");
         }
 
+        if (!inventoryResponse.ok) {
+          throw new Error(
+            "error" in inventoryData
+              ? inventoryData.error?.message ??
+                  "Unable to load inventory."
+              : "Unable to load inventory.",
+          );
+        }
+
         if (
           !("data" in storageData) ||
           !("data" in warehouseData) ||
-          !("user" in userData)
+          !("user" in userData) ||
+          !("data" in inventoryData)
         ) {
           throw new Error("Invalid storage space response.");
         }
@@ -135,6 +171,7 @@ const StorageSpaceDetailPage = () => {
         setStorageSpace(storageData.data);
         setWarehouseName(warehouse?.name ?? "Unknown warehouse");
         setIsAdmin(userData.user.role === "ADMIN");
+        setInventory(inventoryData.data);
       } catch (error) {
         setError(
           error instanceof Error
@@ -366,15 +403,34 @@ const StorageSpaceDetailPage = () => {
           <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-100">Inventory</h2>
         </div>
 
-        <div className="px-5 py-10 text-center">
-          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Inventory details will appear here.
-          </p>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
-            Item-level allocation data will be added when the inventory view is
-            connected.
-          </p>
-        </div>
+        {inventory.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              No inventory stored in this space.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            {inventory.map((row) => (
+              <div
+                key={row.itemId}
+                className="flex items-center justify-between gap-4 px-5 py-4"
+              >
+                <div>
+                  <p className="text-sm font-medium text-neutral-950 dark:text-neutral-100">
+                    {row.itemName}
+                  </p>
+                  <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400">
+                    {row.sku}
+                  </p>
+                </div>
+                <p className="font-mono text-sm text-neutral-950 dark:text-neutral-100">
+                  {formatCapacity(row.quantity)} {row.unit}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

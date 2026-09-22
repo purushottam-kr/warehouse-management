@@ -11,6 +11,7 @@ import { normalizeStorageType } from "@/lib/inventory/storage-type";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
 import { createInventoryMovementRepository } from "@/repositories/inventory-movement.repository";
 import { createItemRepository } from "@/repositories/item.repository";
+import { createStorageSpaceRepository } from "@/repositories/storage-space.repository";
 import type {
   AllocationResult,
   CreateAllocationInput,
@@ -58,6 +59,23 @@ export const getItemAllocationSummary = async (
     totalQuantity,
     locations,
   };
+};
+
+export const getStorageSpaceInventory = async (
+  storageSpaceId: string,
+) => {
+  const storageSpace =
+    await createStorageSpaceRepository().findById(
+      storageSpaceId,
+    );
+
+  if (!storageSpace) {
+    throw new NotFoundError("Storage space not found.");
+  }
+
+  return allocationRepository.getStorageSpaceInventory(
+    storageSpaceId,
+  );
 };
 
 export const allocateInventory = async (

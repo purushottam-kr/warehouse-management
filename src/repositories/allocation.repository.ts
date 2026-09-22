@@ -10,6 +10,7 @@ import {
 import { db } from "@/db";
 import {
   allocations,
+  items,
   storageSpaces,
   warehouses,
 } from "@/db/schema";
@@ -234,6 +235,39 @@ export const createAllocationRepository = (
       );
   };
 
+  const getStorageSpaceInventory = async (
+    storageSpaceId: string,
+  ) => {
+    return database
+      .select({
+        itemId: items.id,
+        itemName: items.name,
+        sku: items.sku,
+        unit: items.unit,
+        quantity: sql<string>`
+          COALESCE(
+            SUM(${allocations.quantity}),
+            0
+          )
+        `,
+      })
+      .from(allocations)
+      .innerJoin(items, eq(allocations.itemId, items.id))
+      .where(
+        eq(
+          allocations.storageSpaceId,
+          storageSpaceId,
+        ),
+      )
+      .groupBy(
+        items.id,
+        items.name,
+        items.sku,
+        items.unit,
+      )
+      .orderBy(asc(items.name), asc(items.sku));
+  };
+
   /*
    * Lock warehouses first.
    *
@@ -423,6 +457,7 @@ const getAllocatedQuantityForWarehouse = async (
     getAllocatedQuantityForStorageSpace,
     getAllocatedQuantityForItem,
     getItemAllocationBreakdown,
+    getStorageSpaceInventory,
     findEligibleStorageSpaces,
     lockWarehouses,
     lockStorageSpaces,
