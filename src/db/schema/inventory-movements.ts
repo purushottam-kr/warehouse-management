@@ -37,14 +37,14 @@ export const inventoryMovements = pgTable(
     fromStorageSpaceId: uuid("from_storage_space_id").references(
       () => storageSpaces.id,
       {
-        onDelete: "restrict",
+        onDelete: "set null",
       },
     ),
 
     toStorageSpaceId: uuid("to_storage_space_id").references(
       () => storageSpaces.id,
       {
-        onDelete: "restrict",
+        onDelete: "set null",
       },
     ),
 
