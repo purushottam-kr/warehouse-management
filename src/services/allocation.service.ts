@@ -91,10 +91,20 @@ export const allocateInventory = async (
       requiredStorageType,
     );
 
-  if (candidates.length === 0) {
+  const selectedCandidates = input.storageSpaceId
+    ? candidates.filter(
+        (candidate) =>
+          candidate.storageSpaceId ===
+          input.storageSpaceId,
+      )
+    : candidates;
+
+  if (selectedCandidates.length === 0) {
     throw new CapacityExceededError(
       "NO_ELIGIBLE_STORAGE_SPACE",
-      "No eligible storage space is available for this item.",
+      input.storageSpaceId
+        ? "The selected storage space is not eligible or has no available capacity."
+        : "No eligible storage space is available for this item.",
     );
   }
 
@@ -102,14 +112,14 @@ export const allocateInventory = async (
     new Decimal(input.quantity);
 
   const candidateSpaceIds =
-    candidates.map(
+    selectedCandidates.map(
       (candidate) =>
         candidate.storageSpaceId,
     );
 
   const candidateWarehouseIds = [
     ...new Set(
-      candidates.map(
+      selectedCandidates.map(
         (candidate) =>
           candidate.warehouseId,
       ),

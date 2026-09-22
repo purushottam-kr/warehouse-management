@@ -18,6 +18,7 @@ import type {
   ItemAllocationLocation,
   ItemAllocationSummary,
 } from "@/types/allocation";
+import { normalizeStorageType } from "@/lib/inventory/storage-type";
 
 type Item = {
   id: string;
@@ -44,6 +45,7 @@ type StorageSpace = {
   name: string;
   code: string;
   capacity: string;
+  allocatedQuantity?: string;
   storageType: string;
   status: "ACTIVE" | "INACTIVE";
 };
@@ -369,6 +371,20 @@ const TransfersWorkspace = () => {
     (space) => space.id === toSpaceId,
   );
 
+  const selectedToSpaceRemainingCapacity =
+    selectedToSpace
+      ? Math.max(
+          0,
+          Number(selectedToSpace.capacity) -
+            Number(selectedToSpace.allocatedQuantity ?? 0),
+        ).toString()
+      : null;
+
+  const isDestinationEligible = (space: StorageSpace) =>
+    item?.requiredStorageType == null ||
+    normalizeStorageType(space.storageType) ===
+      normalizeStorageType(item.requiredStorageType);
+
   const handleTransfer = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
@@ -669,6 +685,18 @@ const TransfersWorkspace = () => {
               </select>
             </div>
 
+            {item ? (
+              <div className="rounded-lg border border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/40 px-4 py-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-sky-700 dark:text-sky-300">
+                  Required storage type
+                </p>
+
+                <p className="mt-1 text-sm font-semibold text-sky-950 dark:text-sky-100">
+                  {item.requiredStorageType ?? "Any storage type"}
+                </p>
+              </div>
+            ) : null}
+
             {isLoadingItem ? (
               <div className="space-y-3 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
                 <div className="h-4 w-40 animate-pulse rounded bg-neutral-100 dark:bg-neutral-800" />
@@ -727,7 +755,8 @@ const TransfersWorkspace = () => {
                           —{" "}
                           {
                             location.storageSpaceCode
-                          }
+                          }{" "}
+                          ({location.storageType})
                         </option>
                       ),
                     )}
@@ -798,11 +827,12 @@ const TransfersWorkspace = () => {
                         key={space.id}
                         value={space.id}
                         disabled={
-                          space.id === fromSpaceId
+                          space.id === fromSpaceId ||
+                          !isDestinationEligible(space)
                         }
                       >
                         {space.name} —{" "}
-                        {space.code}
+                        {space.code} ({space.storageType})
                       </option>
                     ))}
                   </select>
@@ -828,6 +858,19 @@ const TransfersWorkspace = () => {
                         {
                           selectedToSpace.storageType
                         }
+                      </p>
+
+                      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                        Available capacity
+                      </p>
+
+                      <p className="mt-1 text-lg font-semibold text-neutral-950 dark:text-neutral-100">
+                        {formatQuantity(
+                          selectedToSpaceRemainingCapacity ?? "0",
+                        )}{" "}
+                        <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
+                          {item.unit}
+                        </span>
                       </p>
                     </div>
                   ) : null}

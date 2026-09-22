@@ -9,7 +9,11 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/db";
-import { storageSpaces, warehouses } from "@/db/schema";
+import {
+  allocations,
+  storageSpaces,
+  warehouses,
+} from "@/db/schema";
 import type {
   CreateStorageSpaceInput,
   StorageSpaceListRow,
@@ -129,6 +133,11 @@ export const createStorageSpaceRepository = () => {
       name: storageSpaces.name,
       code: storageSpaces.code,
       capacity: storageSpaces.capacity,
+      allocatedQuantity: sql<string>`COALESCE((
+        SELECT SUM(${allocations.quantity})
+        FROM ${allocations}
+        WHERE ${allocations.storageSpaceId} = ${storageSpaces.id}
+      ), 0)`,
       storageType: storageSpaces.storageType,
       status: storageSpaces.status,
       createdAt: storageSpaces.createdAt,

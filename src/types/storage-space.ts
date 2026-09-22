@@ -8,6 +8,7 @@ export type StorageSpace = {
   name: string;
   code: string;
   capacity: string;
+  allocatedQuantity?: string;
   storageType: string;
   status: StorageSpaceStatus;
   createdAt: Date;

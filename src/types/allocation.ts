@@ -10,6 +10,7 @@ export type Allocation = {
 export type CreateAllocationInput = {
   itemId: string;
   quantity: string;
+  storageSpaceId?: string;
 };
 
 export type AllocationResult = {

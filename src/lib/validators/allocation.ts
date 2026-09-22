@@ -15,4 +15,9 @@ export const createAllocationSchema = z.object({
   itemId: z.string().uuid("Invalid item ID."),
 
   quantity: positiveDecimal,
+
+  storageSpaceId: z
+    .string()
+    .uuid("Invalid storage space ID.")
+    .optional(),
 });

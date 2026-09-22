@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import type { ItemAllocationSummary } from "@/types/allocation";
+import { normalizeStorageType } from "@/lib/inventory/storage-type";
 
 type Item = {
   id: string;
@@ -33,6 +34,18 @@ type ItemResponse = {
 
 type AllocationSummaryResponse = {
   data: ItemAllocationSummary;
+};
+
+type StorageSpace = {
+  id: string;
+  warehouseId: string;
+  warehouseName: string;
+  name: string;
+  code: string;
+  capacity: string;
+  allocatedQuantity?: string;
+  storageType: string;
+  status: "ACTIVE" | "INACTIVE";
 };
 
 type AllocationResultResponse = {
@@ -79,6 +92,13 @@ const AllocationsWorkspace = () => {
   const [inventoryError, setInventoryError] =
     useState("");
 
+  const [storageSpaces, setStorageSpaces] =
+    useState<StorageSpace[]>([]);
+  const [isLoadingStorageSpaces, setIsLoadingStorageSpaces] =
+    useState(true);
+  const [storageSpaceId, setStorageSpaceId] =
+    useState("");
+
   const [quantity, setQuantity] = useState("");
   const [formError, setFormError] = useState("");
   const [isAllocating, setIsAllocating] =
@@ -86,6 +106,41 @@ const AllocationsWorkspace = () => {
 
   const [result, setResult] =
     useState<AllocationResultResponse | null>(null);
+
+  useEffect(() => {
+    const loadStorageSpaces = async () => {
+      try {
+        const response = await fetch(
+          "/api/storage-spaces",
+          { cache: "no-store" },
+        );
+        const data = (await response.json()) as
+          | { data: StorageSpace[] }
+          | ApiErrorResponse;
+
+        if (!response.ok || !("data" in data)) {
+          throw new Error(
+            "error" in data
+              ? data.error?.message ??
+                  "Unable to load storage spaces."
+              : "Invalid storage space response.",
+          );
+        }
+
+        setStorageSpaces(data.data);
+      } catch (error) {
+        setInventoryError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load storage spaces.",
+        );
+      } finally {
+        setIsLoadingStorageSpaces(false);
+      }
+    };
+
+    void loadStorageSpaces();
+  }, []);
 
   const loadSummary = async (itemId: string) => {
     const response = await fetch(
@@ -122,6 +177,7 @@ const AllocationsWorkspace = () => {
     setSummary(null);
     setResult(null);
     setQuantity("");
+    setStorageSpaceId("");
     setFormError("");
     setItemError("");
     setInventoryError("");
@@ -276,6 +332,11 @@ const AllocationsWorkspace = () => {
       return;
     }
 
+    if (!storageSpaceId) {
+      setFormError("Select a storage space.");
+      return;
+    }
+
     setIsAllocating(true);
 
     try {
@@ -289,6 +350,7 @@ const AllocationsWorkspace = () => {
           body: JSON.stringify({
             itemId: item.id,
             quantity: trimmedQuantity,
+            storageSpaceId,
           }),
         },
       );
@@ -343,6 +405,22 @@ const AllocationsWorkspace = () => {
   };
 
   const summaryLocations = summary?.locations ?? [];
+
+  const eligibleStorageSpaces = storageSpaces.filter(
+    (space) => {
+      const remainingCapacity =
+        Number(space.capacity) -
+        Number(space.allocatedQuantity ?? 0);
+
+      return (
+        space.status === "ACTIVE" &&
+        remainingCapacity > 0 &&
+        (item?.requiredStorageType == null ||
+          normalizeStorageType(space.storageType) ===
+            normalizeStorageType(item.requiredStorageType))
+      );
+    },
+  );
 
   const locationById = new Map(
     summaryLocations.map((location) => [
@@ -593,10 +671,98 @@ const AllocationsWorkspace = () => {
                       </ul>
                     </div>
                   ) : (
-                    <p className="mt-3 border-t border-neutral-100 dark:border-neutral-800 pt-3 text-xs text-neutral-500 dark:text-neutral-400">
-                      No inventory allocated yet.
-                    </p>
+                    <div className="mt-3 border-t border-neutral-100 dark:border-neutral-800 pt-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                        Current inventory
+                      </p>
+
+                      <p className="mt-1 text-lg font-semibold text-neutral-950 dark:text-neutral-100">
+                        {formatQuantity(
+                          summary?.totalQuantity ?? "0",
+                        )}{" "}
+                        <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
+                          {item.unit}
+                        </span>
+                      </p>
+
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                        No inventory allocated to a storage location yet.
+                      </p>
+                    </div>
                   )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="storageSpace"
+                    className="mb-2 block text-sm font-medium text-neutral-800 dark:text-neutral-200 "
+                  >
+                    Storage space
+                  </label>
+
+                  <select
+                    id="storageSpace"
+                    value={storageSpaceId}
+                    onChange={(event) =>
+                      setStorageSpaceId(
+                        event.target.value,
+                      )
+                    }
+                    disabled={
+                      isAllocating ||
+                      isLoadingStorageSpaces ||
+                      eligibleStorageSpaces.length === 0
+                    }
+                    className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-950 dark:text-neutral-100 outline-none focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800"
+                  >
+                    <option value="">
+                      {isLoadingStorageSpaces
+                        ? "Loading storage spaces..."
+                        : eligibleStorageSpaces.length === 0
+                          ? "No eligible storage spaces"
+                          : "Select storage space"}
+                    </option>
+
+                    {eligibleStorageSpaces.map(
+                      (space) => {
+                        const remainingCapacity =
+                          Number(space.capacity) -
+                          Number(space.allocatedQuantity ?? 0);
+
+                        return (
+                          <option
+                            key={space.id}
+                            value={space.id}
+                          >
+                            {space.name} — {space.code} ({space.storageType}, {formatQuantity(remainingCapacity.toString())} {item.unit} available)
+                          </option>
+                        );
+                      },
+                    )}
+                  </select>
+
+                  {storageSpaceId ? (
+                    <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                      Selected storage space has{" "}
+                      {formatQuantity(
+                        (
+                          Number(
+                            storageSpaces.find(
+                              (space) =>
+                                space.id === storageSpaceId,
+                            )?.capacity ?? 0,
+                          ) -
+                          Number(
+                            storageSpaces.find(
+                              (space) =>
+                                space.id === storageSpaceId,
+                            )?.allocatedQuantity ?? 0,
+                          )
+                        ).toString(),
+                      )}{" "}
+                      {item.unit} available.
+                    </p>
+                  ) : null}
                 </div>
 
                 <div>
