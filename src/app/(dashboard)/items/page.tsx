@@ -5,11 +5,18 @@ import {
   ArrowLeft,
   ArrowRight,
   Boxes,
+  Download,
   Plus,
   Search,
+  Upload,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import {
+  ITEM_CSV_HEADERS,
+  ITEM_IMPORT_MAX_BYTES,
+  ITEM_IMPORT_MAX_ROWS,
+} from "@/lib/csv/item-csv";
 import type { ListPagination } from "@/types/pagination";
 import type { Item } from "@/types/item";
 
@@ -20,8 +27,26 @@ type ItemsResponse = {
 
 type ApiErrorResponse = {
   error?: {
+    code?: string;
     message?: string;
+    details?: {
+      created?: number;
+      rejected?: number;
+      errors?: ImportRowError[];
+    };
   };
+};
+
+type ImportRowError = {
+  row: number;
+  sku?: string;
+  messages: string[];
+};
+
+type ImportSummary = {
+  created: number;
+  rejected: number;
+  errors: ImportRowError[];
 };
 
 type WarehouseOption = {
@@ -59,6 +84,19 @@ const ItemsPage = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
+
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [importSummary, setImportSummary] =
+    useState<ImportSummary | null>(null);
+
+  const [refreshToken, setRefreshToken] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement | null>(
+    null,
+  );
 
   const hasFilters =
     searchInput.trim() !== "" ||
@@ -227,7 +265,186 @@ const ItemsPage = () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [searchInput, warehouseId, storageSpaceId, page]);
+  }, [
+    searchInput,
+    warehouseId,
+    storageSpaceId,
+    page,
+    refreshToken,
+  ]);
+
+  const buildFilterParams = () => {
+    const params = new URLSearchParams();
+    const trimmedSearch = searchInput.trim();
+
+    if (trimmedSearch) {
+      params.set("search", trimmedSearch);
+    }
+
+    if (warehouseId) {
+      params.set("warehouseId", warehouseId);
+    }
+
+    if (storageSpaceId) {
+      params.set("storageSpaceId", storageSpaceId);
+    }
+
+    return params;
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    setExportError("");
+
+    try {
+      const response = await fetch(
+        `/api/items/export?${buildFilterParams().toString()}`,
+        { cache: "no-store" },
+      );
+
+      if (!response.ok) {
+        const data = (await response.json()) as
+          | ApiErrorResponse
+          | Record<string, never>;
+
+        throw new Error(
+          "error" in data && data.error?.message
+            ? data.error.message
+            : "Unable to export items.",
+        );
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get(
+        "Content-Disposition",
+      );
+
+      const filename =
+        disposition?.match(/filename="([^"]+)"/)?.[1] ??
+        "items-export.csv";
+
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (exportFailure) {
+      setExportError(
+        exportFailure instanceof Error
+          ? exportFailure.message
+          : "Unable to export items.",
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const blob = new Blob(
+      [`${ITEM_CSV_HEADERS.join(",")}\n`],
+      { type: "text/csv; charset=utf-8" },
+    );
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "items-import-template.csv";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const handleImportFile = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+
+    /* Reset so the same file can be picked again. */
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setImportError("");
+    setImportSummary(null);
+
+    /* Fast client-side feedback; the server re-checks. */
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setImportError(
+        "Invalid file type. Choose a .csv file.",
+      );
+      return;
+    }
+
+    if (file.size > ITEM_IMPORT_MAX_BYTES) {
+      setImportError(
+        "File is too large. Maximum size is 2 MB.",
+      );
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("file", file);
+
+      const response = await fetch("/api/items/import", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as
+        | { data: ImportSummary }
+        | ApiErrorResponse;
+
+      if (!response.ok) {
+        const details =
+          "error" in data ? data.error?.details : undefined;
+
+        if (details?.errors) {
+          setImportSummary({
+            created: details.created ?? 0,
+            rejected:
+              details.rejected ?? details.errors.length,
+            errors: details.errors,
+          });
+        }
+
+        throw new Error(
+          "error" in data && data.error?.message
+            ? data.error.message
+            : "Unable to import items.",
+        );
+      }
+
+      if (!("data" in data)) {
+        throw new Error("Invalid import response.");
+      }
+
+      setImportSummary(data.data);
+      setPage(1);
+      setRefreshToken((token) => token + 1);
+    } catch (importFailure) {
+      setImportError(
+        importFailure instanceof Error
+          ? importFailure.message
+          : "Unable to import items.",
+      );
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const changeFilter = (apply: () => void) => {
     setPage(1);
@@ -263,14 +480,112 @@ const ItemsPage = () => {
             </p>
           </div>
 
-          <Link
-            href="/items/new"
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
-          >
-            <Plus className="h-4 w-4" />
-            New item
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting || isImporting}
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              {isExporting ? "Exporting..." : "Export"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting || isExporting}
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Upload className="h-4 w-4" />
+              {isImporting ? "Importing..." : "Import"}
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              aria-label="Import items from CSV"
+              className="hidden"
+              onChange={handleImportFile}
+            />
+
+            <Link
+              href="/items/new"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
+            >
+              <Plus className="h-4 w-4" />
+              New item
+            </Link>
+          </div>
         </div>
+
+        {exportError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            Export failed: {exportError}
+          </div>
+        ) : null}
+
+        {importError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            <p className="font-medium">
+              Import failed: {importError}
+            </p>
+
+            <p className="mt-1 text-xs text-red-600">
+              No items were imported. Fix the rows below
+              and try again. Limits: 2 MB,{" "}
+              {ITEM_IMPORT_MAX_ROWS} rows.{" "}
+              <button
+                type="button"
+                onClick={downloadTemplate}
+                className="font-medium underline hover:no-underline"
+              >
+                Download template
+              </button>
+            </p>
+          </div>
+        ) : null}
+
+        {importSummary ? (
+          <div
+            role="status"
+            className={`rounded-lg border px-4 py-3 text-sm ${
+              importSummary.errors.length === 0
+                ? "border-green-200 bg-green-50 text-green-700"
+                : "border-amber-200 bg-amber-50 text-amber-800"
+            }`}
+          >
+            <p className="font-medium">
+              {importSummary.errors.length === 0
+                ? `Imported ${importSummary.created} item${importSummary.created === 1 ? "" : "s"}.`
+                : `Created ${importSummary.created}, rejected ${importSummary.rejected}. No items were imported.`}
+            </p>
+
+            {importSummary.errors.length > 0 ? (
+              <ul className="mt-2 max-h-48 space-y-1.5 overflow-auto text-xs">
+                {importSummary.errors.map((rowError) => (
+                  <li key={rowError.row}>
+                    <span className="font-mono font-medium">
+                      Row {rowError.row}
+                      {rowError.sku
+                        ? ` (${rowError.sku})`
+                        : ""}
+                      :
+                    </span>{" "}
+                    {rowError.messages.join(" ")}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
 
         {error ? (
           <div

@@ -98,3 +98,33 @@ export const listItemsQuerySchema =
 export type ListItemQuerySchemaInput = z.infer<
   typeof listItemsQuerySchema
 >;
+
+/*
+ * Export accepts the same search/filter state as the list
+ * endpoint but never paginates: every matching row is
+ * exported. Page/pageSize params are ignored, not rejected.
+ */
+export const exportItemsQuerySchema = z.object({
+  search: z
+    .string()
+    .trim()
+    .max(
+      100,
+      "Search must be 100 characters or fewer.",
+    )
+    .optional(),
+
+  warehouseId: z
+    .string()
+    .uuid("Invalid warehouse ID.")
+    .optional(),
+
+  storageSpaceId: z
+    .string()
+    .uuid("Invalid storage space ID.")
+    .optional(),
+});
+
+export type ExportItemsQuery = z.infer<
+  typeof exportItemsQuerySchema
+>;

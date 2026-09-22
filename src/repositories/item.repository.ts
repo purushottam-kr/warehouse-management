@@ -6,12 +6,14 @@ import {
   eq,
   exists,
   ilike,
+  inArray,
   or,
   sql,
   type SQL,
 } from "drizzle-orm";
 
 import { db } from "@/db";
+import type { DbTransaction } from "@/db/transaction";
 import {
   allocations,
   items,
@@ -138,6 +140,17 @@ export const createItemRepository = () => {
     return item ?? null;
   };
 
+  const findBySkus = async (skus: string[]) => {
+    if (skus.length === 0) {
+      return [];
+    }
+
+    return db
+      .select()
+      .from(items)
+      .where(inArray(items.sku, skus));
+  };
+
   const findMany = async () => {
     return db
       .select()
@@ -182,6 +195,55 @@ export const createItemRepository = () => {
       .offset(offset);
   };
 
+  /*
+   * Unpaged read model for CSV export.
+   *
+   * Same WHERE semantics as the list endpoint so an export
+   * with the current search/filter state matches the table.
+   */
+  const findItemsForExport = async (
+    filters: ItemFilters,
+    limit: number,
+  ): Promise<ItemListPage["items"]> => {
+    return db
+      .select()
+      .from(items)
+      .where(buildItemFilters(filters))
+      .orderBy(desc(items.createdAt), desc(items.id))
+      .limit(limit);
+  };
+
+  /*
+   * Bulk insert for transactional CSV import.
+   *
+   * Accepts the active transaction so the service can insert
+   * every validated row atomically: all rows or none.
+   */
+  const createMany = async (
+    rows: CreateItemInput[],
+    tx?: DbTransaction | typeof db,
+  ) => {
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const client = tx ?? db;
+
+    return client
+      .insert(items)
+      .values(
+        rows.map((row) => ({
+          sku: row.sku,
+          name: row.name,
+          description: row.description ?? null,
+          unit: row.unit,
+          requiredStorageType:
+            row.requiredStorageType ?? null,
+        })),
+      )
+      .returning();
+  };
+
   const update = async (
     id: string,
     data: UpdateItemInput,
@@ -209,11 +271,14 @@ export const createItemRepository = () => {
 
   return {
     create,
+    createMany,
     findById,
     findBySku,
+    findBySkus,
     findMany,
     countItems,
     findItems,
+    findItemsForExport,
     update,
     remove,
   };
