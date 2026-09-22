@@ -272,6 +272,22 @@ const StorageSpaceDetailPage = () => {
     );
   }
 
+  const filledCapacity = inventory.reduce(
+    (total, row) => total + Number(row.quantity),
+    0,
+  );
+  const remainingCapacity = Math.max(
+    0,
+    Number(storageSpace.capacity) - filledCapacity,
+  );
+  const capacityPercentage =
+    Number(storageSpace.capacity) > 0
+      ? Math.min(
+          100,
+          (filledCapacity / Number(storageSpace.capacity)) * 100,
+        )
+      : 0;
+
   return (
     <div className="space-y-6">
       <Link
@@ -370,6 +386,40 @@ const StorageSpaceDetailPage = () => {
           </div>
 
           <div className="bg-white dark:bg-neutral-900 px-5 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
+                Capacity usage
+              </p>
+              <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                {capacityPercentage.toFixed(1)}% filled
+              </p>
+            </div>
+
+            <div
+              className="mt-3 h-2.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700"
+              role="progressbar"
+              aria-label="Storage capacity used"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={capacityPercentage}
+            >
+              <div
+                className="h-full rounded-full bg-sky-500 transition-[width]"
+                style={{ width: `${capacityPercentage}%` }}
+              />
+            </div>
+
+            <div className="mt-2 flex justify-between gap-4 text-xs text-neutral-500 dark:text-neutral-400">
+              <span>
+                {formatCapacity(filledCapacity.toString())} filled
+              </span>
+              <span>
+                {formatCapacity(remainingCapacity.toString())} remaining
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-neutral-900 px-5 py-4">
             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
               Status
             </p>
@@ -395,6 +445,11 @@ const StorageSpaceDetailPage = () => {
               {formatDate(storageSpace.updatedAt)}
             </p>
           </div>
+
+          <div
+            aria-hidden="true"
+            className="hidden bg-white dark:bg-neutral-900 md:block"
+          />
         </div>
       </section>
 
