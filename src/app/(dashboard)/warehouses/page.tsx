@@ -28,7 +28,7 @@ const PAGE_SIZE = 25;
 
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 

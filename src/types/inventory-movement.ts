@@ -29,6 +29,13 @@ export type MovementSpaceRef = {
   name: string;
   code: string;
   warehouseName: string;
+  /*
+   * Step 8: full-path segments, nullable for
+   * legacy-shaped rows.
+   */
+  aisleName: string | null;
+  bayName: string | null;
+  layerName: string | null;
 };
 
 export type MovementActivity = {

@@ -29,6 +29,17 @@ export type ItemAllocationLocation = {
   storageType: string;
   warehouseId: string;
   warehouseName: string;
+  /*
+   * Step 8: full-path segments. Nullable for
+   * legacy-shaped rows without a chain below the
+   * warehouse — the formatter skips missing levels.
+   */
+  aisleName: string | null;
+  aisleCode: string | null;
+  bayName: string | null;
+  bayCode: string | null;
+  layerName: string | null;
+  layerCode: string | null;
   quantity: string;
 };
 

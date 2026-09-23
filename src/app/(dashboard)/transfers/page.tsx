@@ -18,6 +18,7 @@ import type {
   ItemAllocationLocation,
   ItemAllocationSummary,
 } from "@/types/allocation";
+import { formatLocationPath } from "@/lib/inventory/location-path";
 import { normalizeStorageType } from "@/lib/inventory/storage-type";
 
 type Item = {
@@ -42,6 +43,10 @@ type AllocationSummaryResponse = {
 type StorageSpace = {
   id: string;
   warehouseId: string;
+  warehouseName: string;
+  aisleName: string | null;
+  bayName: string | null;
+  layerName: string | null;
   name: string;
   code: string;
   capacity: string;
@@ -68,7 +73,7 @@ const QUANTITY_PATTERN = /^\d{1,9}(\.\d{1,3})?$/;
 
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -95,8 +100,6 @@ const TransfersWorkspace = () => {
   const [spaces, setSpaces] = useState<
     StorageSpace[]
   >([]);
-  const [warehouseNames, setWarehouseNames] =
-    useState<Map<string, string>>(new Map());
   const [isLoadingSpaces, setIsLoadingSpaces] =
     useState(true);
 
@@ -232,29 +235,13 @@ const TransfersWorkspace = () => {
   useEffect(() => {
     const loadWorkspace = async () => {
       try {
-        const [spacesResponse, warehousesResponse] =
-          await Promise.all([
-            fetch("/api/storage-spaces", {
-              cache: "no-store",
-            }),
-            fetch("/api/warehouses", {
-              cache: "no-store",
-            }),
-          ]);
+        const spacesResponse = await fetch("/api/storage-spaces", {
+          cache: "no-store",
+        });
 
         const spacesData =
           (await spacesResponse.json()) as
             | { data: StorageSpace[] }
-            | ApiErrorResponse;
-
-        const warehousesData =
-          (await warehousesResponse.json()) as
-            | {
-                data: Array<{
-                  id: string;
-                  name: string;
-                }>;
-              }
             | ApiErrorResponse;
 
         if (!spacesResponse.ok) {
@@ -273,21 +260,6 @@ const TransfersWorkspace = () => {
         }
 
         setSpaces(spacesData.data);
-
-        if (warehousesResponse.ok) {
-          if ("data" in warehousesData) {
-            setWarehouseNames(
-              new Map(
-                warehousesData.data.map(
-                  (warehouse) => [
-                    warehouse.id,
-                    warehouse.name,
-                  ],
-                ),
-              ),
-            );
-          }
-        }
       } catch (loadError) {
         setItemsError(
           loadError instanceof Error
@@ -848,12 +820,17 @@ const TransfersWorkspace = () => {
                       </p>
 
                       <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 ">
-                        {
-                          warehouseNames.get(
-                            selectedToSpace.warehouseId,
-                          ) ??
-                            "Unknown warehouse"
-                        }{" "}
+                        {formatLocationPath({
+                          warehouseName:
+                            selectedToSpace.warehouseName,
+                          aisleName:
+                            selectedToSpace.aisleName,
+                          bayName:
+                            selectedToSpace.bayName,
+                          layerName:
+                            selectedToSpace.layerName,
+                          spaceName: selectedToSpace.name,
+                        })}{" "}
                         ·{" "}
                         {
                           selectedToSpace.storageType

@@ -14,6 +14,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import type { ItemAllocationSummary } from "@/types/allocation";
+import { formatLocationPath } from "@/lib/inventory/location-path";
 
 type Item = {
   id: string;
@@ -50,7 +51,7 @@ type ApiErrorResponse = {
 
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -502,7 +503,7 @@ const ItemDetailPage = () => {
                   </th>
 
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                    Warehouse
+                    Location
                   </th>
 
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
@@ -532,7 +533,15 @@ const ItemDetailPage = () => {
                     </td>
 
                     <td className="px-5 py-4 text-sm text-neutral-600 dark:text-neutral-400">
-                      {location.warehouseName}
+                      {formatLocationPath({
+                        warehouseName:
+                          location.warehouseName,
+                        aisleName: location.aisleName,
+                        bayName: location.bayName,
+                        layerName: location.layerName,
+                        spaceName:
+                          location.storageSpaceName,
+                      })}
                     </td>
 
                     <td className="px-5 py-4">

@@ -10,13 +10,17 @@ import {
 
 import { db } from "@/db";
 import {
+  aisles,
   allocations,
+  bays,
+  layers,
   storageSpaces,
   warehouses,
 } from "@/db/schema";
 import type {
   CreateStorageSpaceInput,
   StorageSpaceListRow,
+  StorageSpaceLocationPath,
   StorageSpaceStatus,
   UpdateStorageSpaceInput,
 } from "@/types/storage-space";
@@ -24,6 +28,7 @@ import type {
 type StorageSpaceFilters = {
   search?: string;
   warehouseId?: string;
+  layerId?: string;
   storageType?: string;
   status?: StorageSpaceStatus;
 };
@@ -45,6 +50,12 @@ const buildStorageSpaceFilters = (
   if (filters.warehouseId) {
     conditions.push(
       eq(storageSpaces.warehouseId, filters.warehouseId),
+    );
+  }
+
+  if (filters.layerId) {
+    conditions.push(
+      eq(storageSpaces.layerId, filters.layerId),
     );
   }
 
@@ -71,11 +82,21 @@ const buildStorageSpaceFilters = (
 };
 
 export const createStorageSpaceRepository = () => {
-  const create = async (data: CreateStorageSpaceInput) => {
+  /*
+   * The service always resolves warehouseId from the
+   * layer chain (dual-write) before calling create, so
+   * the repository requires the resolved value here.
+   */
+  const create = async (
+    data: CreateStorageSpaceInput & {
+      warehouseId: string;
+    },
+  ) => {
     const [storageSpace] = await db
       .insert(storageSpaces)
       .values({
         warehouseId: data.warehouseId,
+        layerId: data.layerId,
         name: data.name,
         code: data.code,
         capacity: data.capacity,
@@ -114,6 +135,30 @@ export const createStorageSpaceRepository = () => {
     return storageSpace ?? null;
   };
 
+  /*
+   * Layer-scoped code lookup for the new creation
+   * contract (Step 5). Uniqueness is enforced in the
+   * service; the (layer_id, code) DB constraint arrives
+   * at finalize.
+   */
+  const findByCodeInLayer = async (
+    layerId: string,
+    code: string,
+  ) => {
+    const [storageSpace] = await db
+      .select()
+      .from(storageSpaces)
+      .where(
+        and(
+          eq(storageSpaces.layerId, layerId),
+          eq(storageSpaces.code, code),
+        ),
+      )
+      .limit(1);
+
+    return storageSpace ?? null;
+  };
+
   const findManyByWarehouseId = async (
     warehouseId: string,
   ) => {
@@ -124,12 +169,38 @@ export const createStorageSpaceRepository = () => {
       .orderBy(asc(storageSpaces.name));
   };
 
-  const findMany = async () => {
+  /*
+   * Additive finder for the physical-hierarchy
+   * deletion guards (Step 3): walk down
+   * Bay -> Layer -> Storage Space. No existing
+   * query is changed.
+   */
+  const findManyByLayerId = async (
+    layerId: string,
+  ) => {
+    return db
+      .select()
+      .from(storageSpaces)
+      .where(eq(storageSpaces.layerId, layerId))
+      .orderBy(asc(storageSpaces.name));
+  };
+
+  /*
+   * Step 8: aisle/bay/layer names ride along for the
+   * full-path display (LEFT JOINs — null for legacy
+   * rows). The warehouse join stays on the stored
+   * column, still dual-written and identical.
+   */
+  const findMany = async (): Promise<StorageSpaceListRow[]> => {
   return db
     .select({
       id: storageSpaces.id,
       warehouseId: storageSpaces.warehouseId,
+      layerId: storageSpaces.layerId,
       warehouseName: warehouses.name,
+      aisleName: aisles.name,
+      bayName: bays.name,
+      layerName: layers.name,
       name: storageSpaces.name,
       code: storageSpaces.code,
       capacity: storageSpaces.capacity,
@@ -148,6 +219,12 @@ export const createStorageSpaceRepository = () => {
       warehouses,
       eq(storageSpaces.warehouseId, warehouses.id),
     )
+    .leftJoin(
+      layers,
+      eq(storageSpaces.layerId, layers.id),
+    )
+    .leftJoin(bays, eq(layers.bayId, bays.id))
+    .leftJoin(aisles, eq(bays.aisleId, aisles.id))
     .orderBy(asc(storageSpaces.name));
 };
 
@@ -179,7 +256,11 @@ export const createStorageSpaceRepository = () => {
       .select({
         id: storageSpaces.id,
         warehouseId: storageSpaces.warehouseId,
+        layerId: storageSpaces.layerId,
         warehouseName: warehouses.name,
+        aisleName: aisles.name,
+        bayName: bays.name,
+        layerName: layers.name,
         name: storageSpaces.name,
         code: storageSpaces.code,
         capacity: storageSpaces.capacity,
@@ -193,6 +274,12 @@ export const createStorageSpaceRepository = () => {
         warehouses,
         eq(storageSpaces.warehouseId, warehouses.id),
       )
+      .leftJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .leftJoin(bays, eq(layers.bayId, bays.id))
+      .leftJoin(aisles, eq(bays.aisleId, aisles.id))
       .where(buildStorageSpaceFilters(filters))
       /*
        * Secondary ID ordering keeps pagination stable
@@ -204,6 +291,50 @@ export const createStorageSpaceRepository = () => {
       )
       .limit(limit)
       .offset(offset);
+  };
+
+  /*
+   * Step 8: full location path for one storage space,
+   * walked up space -> layer -> bay -> aisle ->
+   * warehouse. Chain levels are null for legacy-shaped
+   * rows; the warehouse always resolves via the stored
+   * column.
+   */
+  const getLocationPath = async (
+    id: string,
+  ): Promise<StorageSpaceLocationPath | null> => {
+    const [row] = await db
+      .select({
+        spaceId: storageSpaces.id,
+        spaceName: storageSpaces.name,
+        spaceCode: storageSpaces.code,
+        layerId: storageSpaces.layerId,
+        layerName: layers.name,
+        layerCode: layers.code,
+        bayId: bays.id,
+        bayName: bays.name,
+        bayCode: bays.code,
+        aisleId: aisles.id,
+        aisleName: aisles.name,
+        aisleCode: aisles.code,
+        warehouseId: warehouses.id,
+        warehouseName: warehouses.name,
+      })
+      .from(storageSpaces)
+      .innerJoin(
+        warehouses,
+        eq(storageSpaces.warehouseId, warehouses.id),
+      )
+      .leftJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .leftJoin(bays, eq(layers.bayId, bays.id))
+      .leftJoin(aisles, eq(bays.aisleId, aisles.id))
+      .where(eq(storageSpaces.id, id))
+      .limit(1);
+
+    return row ?? null;
   };
 
   const update = async (
@@ -235,8 +366,11 @@ export const createStorageSpaceRepository = () => {
     create,
     findById,
     findByCode,
+    findByCodeInLayer,
     findManyByWarehouseId,
+    findManyByLayerId,
     findMany,
+    getLocationPath,
     countStorageSpaces,
     findStorageSpaces,
     update,

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import type { DashboardOverview } from "@/types/dashboard";
+import { formatLocationPath } from "@/lib/inventory/location-path";
 
 const formatNumber = (val: number | string) => {
   const num = typeof val === "string" ? Number(val) : val;
@@ -458,13 +459,57 @@ const DashboardPage = () => {
                     <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                       <span>
                         {activity.type === "ALLOCATE" && activity.to && (
-                          <>To {activity.to.name} ({activity.to.warehouseName})</>
+                          <>To {formatLocationPath({
+                            warehouseName:
+                              activity.to.warehouseName,
+                            aisleName:
+                              activity.to.aisleName,
+                            bayName:
+                              activity.to.bayName,
+                            layerName:
+                              activity.to.layerName,
+                            spaceName:
+                              activity.to.name,
+                          })}</>
                         )}
                         {activity.type === "MOVE" && activity.from && activity.to && (
-                          <>{activity.from.name} → {activity.to.name}</>
+                          <>{formatLocationPath({
+                            warehouseName:
+                              activity.from.warehouseName,
+                            aisleName:
+                              activity.from.aisleName,
+                            bayName:
+                              activity.from.bayName,
+                            layerName:
+                              activity.from.layerName,
+                            spaceName:
+                              activity.from.name,
+                          })} → {formatLocationPath({
+                            warehouseName:
+                              activity.to.warehouseName,
+                            aisleName:
+                              activity.to.aisleName,
+                            bayName:
+                              activity.to.bayName,
+                            layerName:
+                              activity.to.layerName,
+                            spaceName:
+                              activity.to.name,
+                          })}</>
                         )}
                         {activity.type === "RELEASE" && activity.from && (
-                          <>From {activity.from.name} ({activity.from.warehouseName})</>
+                          <>From {formatLocationPath({
+                            warehouseName:
+                              activity.from.warehouseName,
+                            aisleName:
+                              activity.from.aisleName,
+                            bayName:
+                              activity.from.bayName,
+                            layerName:
+                              activity.from.layerName,
+                            spaceName:
+                              activity.from.name,
+                          })}</>
                         )}
                       </span>
                       <span>

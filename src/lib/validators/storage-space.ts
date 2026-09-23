@@ -8,7 +8,15 @@ export const storageSpaceStatusSchema = z.enum([
 ]);
 
 export const createStorageSpaceSchema = z.object({
-  warehouseId: z.string().uuid(),
+  /*
+   * Transition contract (Step 5): layerId is required —
+   * the canonical parent. warehouseId stays optional so
+   * the nested warehouse route can inject it from the
+   * URL; the service cross-checks both agree.
+   */
+  layerId: z.string().uuid("Invalid layer ID."),
+
+  warehouseId: z.string().uuid().optional(),
 
   name: z
     .string()
@@ -101,6 +109,11 @@ export const listStorageSpacesQuerySchema =
     warehouseId: z
       .string()
       .uuid("Invalid warehouse ID.")
+      .optional(),
+
+    layerId: z
+      .string()
+      .uuid("Invalid layer ID.")
       .optional(),
 
     storageType: z

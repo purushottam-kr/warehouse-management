@@ -57,12 +57,29 @@ const buildWarehouseFilters = (
  * drizzle renders interpolated column references
  * unqualified inside sql templates, which is ambiguous
  * in correlated subqueries.
+ *
+ * Step 6: membership resolves through the physical
+ * hierarchy (space -> layer -> bay -> aisle ->
+ * warehouse). The `OR sp.layer_id IS NULL` branch is
+ * transition-only: it keeps legacy-shaped rows (not yet
+ * backfilled) counted exactly as before. Finalize drops
+ * it along with the warehouse_id column.
  */
 const totalCapacitySql = sql<string>`
   (
     SELECT COALESCE(SUM(sp.capacity), 0)
     FROM storage_spaces sp
-    WHERE sp.warehouse_id = warehouses.id
+    LEFT JOIN layers ly
+      ON ly.id = sp.layer_id
+    LEFT JOIN bays ba
+      ON ba.id = ly.bay_id
+    LEFT JOIN aisles ai
+      ON ai.id = ba.aisle_id
+    WHERE ai.warehouse_id = warehouses.id
+       OR (
+         sp.layer_id IS NULL
+         AND sp.warehouse_id = warehouses.id
+       )
   )
 `;
 
@@ -72,7 +89,17 @@ const allocatedQuantitySql = sql<string>`
     FROM allocations al
     INNER JOIN storage_spaces sp
       ON sp.id = al.storage_space_id
-    WHERE sp.warehouse_id = warehouses.id
+    LEFT JOIN layers ly
+      ON ly.id = sp.layer_id
+    LEFT JOIN bays ba
+      ON ba.id = ly.bay_id
+    LEFT JOIN aisles ai
+      ON ai.id = ba.aisle_id
+    WHERE ai.warehouse_id = warehouses.id
+       OR (
+         sp.layer_id IS NULL
+         AND sp.warehouse_id = warehouses.id
+       )
   )
 `;
 

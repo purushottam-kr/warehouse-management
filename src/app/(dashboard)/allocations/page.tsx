@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import type { ItemAllocationSummary } from "@/types/allocation";
+import { formatLocationPath } from "@/lib/inventory/location-path";
 import { normalizeStorageType } from "@/lib/inventory/storage-type";
 
 type Item = {
@@ -68,7 +69,7 @@ const QUANTITY_PATTERN = /^\d+(\.\d{1,3})?$/;
 
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -499,9 +500,17 @@ const AllocationsWorkspace = () => {
 
                         {location ? (
                           <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                            {
-                              location.warehouseName
-                            }
+                            {formatLocationPath({
+                              warehouseName:
+                                location.warehouseName,
+                              aisleName:
+                                location.aisleName,
+                              bayName: location.bayName,
+                              layerName:
+                                location.layerName,
+                              spaceName:
+                                location.storageSpaceName,
+                            })}
                           </p>
                         ) : null}
                       </div>
@@ -620,6 +629,23 @@ const AllocationsWorkspace = () => {
                             "0",
                         )}{" "}
                         <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
+                          of{" "}
+                          {formatQuantity(
+                            summaryLocations
+                              .reduce(
+                                (total, location) =>
+                                  total +
+                                  Number(
+                                    storageSpaces.find(
+                                      (space) =>
+                                        space.id ===
+                                        location.storageSpaceId,
+                                    )?.capacity ?? 0,
+                                  ),
+                                0,
+                              )
+                              .toString(),
+                          )}{" "}
                           {item.unit}
                         </span>
                       </p>
@@ -641,32 +667,52 @@ const AllocationsWorkspace = () => {
 
                       <ul className="mt-2 divide-y divide-neutral-100 dark:divide-neutral-800 ">
                         {summaryLocations.map(
-                          (location) => (
-                            <li
-                              key={
-                                location.storageSpaceId
-                              }
-                              className="flex items-center justify-between gap-4 py-1.5"
-                            >
-                              <p className="text-sm text-neutral-700 dark:text-neutral-300 ">
-                                {
-                                  location.storageSpaceName
+                          (location) => {
+                            const spaceCapacity =
+                              storageSpaces.find(
+                                (space) =>
+                                  space.id ===
+                                  location.storageSpaceId,
+                              )?.capacity;
+
+                            return (
+                              <li
+                                key={
+                                  location.storageSpaceId
                                 }
-
-                                <span className="ml-2 font-mono text-xs text-neutral-400 dark:text-neutral-500">
+                                className="flex items-center justify-between gap-4 py-1.5"
+                              >
+                                <p className="text-sm text-neutral-700 dark:text-neutral-300 ">
                                   {
-                                    location.storageSpaceCode
+                                    location.storageSpaceName
                                   }
-                                </span>
-                              </p>
 
-                              <p className="font-mono text-sm text-neutral-950 dark:text-neutral-100">
-                                {formatQuantity(
-                                  location.quantity,
-                                )}
-                              </p>
-                            </li>
-                          ),
+                                  <span className="ml-2 font-mono text-xs text-neutral-400 dark:text-neutral-500">
+                                    {
+                                      location.storageSpaceCode
+                                    }
+                                  </span>
+                                </p>
+
+                                <p className="font-mono text-sm text-neutral-950 dark:text-neutral-100">
+                                  {formatQuantity(
+                                    location.quantity,
+                                  )}
+                                  {spaceCapacity !==
+                                  undefined ? (
+                                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                      {" "}
+                                      of{" "}
+                                      {formatQuantity(
+                                        spaceCapacity,
+                                      )}{" "}
+                                      {item.unit}
+                                    </span>
+                                  ) : null}
+                                </p>
+                              </li>
+                            );
+                          },
                         )}
                       </ul>
                     </div>
@@ -734,7 +780,7 @@ const AllocationsWorkspace = () => {
                             key={space.id}
                             value={space.id}
                           >
-                            {space.name} — {space.code} ({space.storageType}, {formatQuantity(remainingCapacity.toString())} {item.unit} available)
+                            {space.name} — {space.code} ({space.storageType}) — {formatQuantity(remainingCapacity.toString())} of {formatQuantity(space.capacity)} {item.unit} free
                           </option>
                         );
                       },
@@ -781,7 +827,7 @@ const AllocationsWorkspace = () => {
                     onChange={(event) =>
                       setQuantity(event.target.value)
                     }
-                    placeholder="100.000"
+                    placeholder="100"
                     disabled={isAllocating}
                     className="h-11 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 font-mono text-sm text-neutral-950 dark:text-neutral-100 outline-none placeholder:font-sans placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-50 dark:disabled:bg-neutral-800"
                   />

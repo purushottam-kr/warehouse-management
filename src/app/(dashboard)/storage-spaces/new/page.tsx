@@ -19,6 +19,17 @@ type WarehousesResponse = {
   data: Warehouse[];
 };
 
+type LocationOption = {
+  id: string;
+  name: string;
+  code: string;
+  status: "ACTIVE" | "INACTIVE";
+};
+
+type LocationsResponse = {
+  data: LocationOption[];
+};
+
 type ApiErrorResponse = {
   error?: {
     message?: string;
@@ -40,13 +51,20 @@ const NewStorageSpaceForm = () => {
   const warehouseParam = searchParams.get("warehouse") ?? "";
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [aisles, setAisles] = useState<LocationOption[]>([]);
+  const [bays, setBays] = useState<LocationOption[]>([]);
+  const [layers, setLayers] = useState<LocationOption[]>([]);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(true);
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [warehouseId, setWarehouseId] = useState(warehouseParam);
+  const [aisleId, setAisleId] = useState("");
+  const [bayId, setBayId] = useState("");
+  const [layerId, setLayerId] = useState("");
   const [storageType, setStorageType] = useState("");
   const [capacity, setCapacity] = useState("");
 
@@ -122,6 +140,132 @@ const NewStorageSpaceForm = () => {
     void loadWarehouses();
   }, [warehouseParam]);
 
+  const loadLocations = async <T extends LocationOption>(
+    url: string,
+    setter: (options: T[]) => void,
+    fallback: string,
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+      });
+
+      const data = (await response.json()) as
+        | LocationsResponse
+        | ApiErrorResponse;
+
+      if (!response.ok) {
+        throw new Error(
+          "error" in data
+            ? data.error?.message ?? fallback
+            : fallback,
+        );
+      }
+
+      if (!("data" in data)) {
+        throw new Error(fallback);
+      }
+
+      setter(
+        data.data.filter(
+          (option) => option.status === "ACTIVE",
+        ) as T[],
+      );
+
+      return true;
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : fallback,
+      );
+
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (!warehouseId) {
+      return;
+    }
+
+    const loadAisles = async () => {
+      setIsLoadingLocations(true);
+
+      await loadLocations(
+        `/api/warehouses/${warehouseId}/aisles`,
+        setAisles,
+        "Unable to load aisles.",
+      );
+
+      setIsLoadingLocations(false);
+    };
+
+    void loadAisles();
+  }, [warehouseId]);
+
+  useEffect(() => {
+    if (!aisleId) {
+      return;
+    }
+
+    const loadBays = async () => {
+      setIsLoadingLocations(true);
+
+      await loadLocations(
+        `/api/aisles/${aisleId}/bays`,
+        setBays,
+        "Unable to load bays.",
+      );
+
+      setIsLoadingLocations(false);
+    };
+
+    void loadBays();
+  }, [aisleId]);
+
+  useEffect(() => {
+    if (!bayId) {
+      return;
+    }
+
+    const loadLayers = async () => {
+      setIsLoadingLocations(true);
+
+      await loadLocations(
+        `/api/bays/${bayId}/layers`,
+        setLayers,
+        "Unable to load layers.",
+      );
+
+      setIsLoadingLocations(false);
+    };
+
+    void loadLayers();
+  }, [bayId]);
+
+  const handleWarehouseChange = (nextWarehouseId: string) => {
+    setWarehouseId(nextWarehouseId);
+    setAisles([]);
+    setBays([]);
+    setLayers([]);
+    setAisleId("");
+    setBayId("");
+    setLayerId("");
+  };
+
+  const handleAisleChange = (nextAisleId: string) => {
+    setAisleId(nextAisleId);
+    setBays([]);
+    setLayers([]);
+    setBayId("");
+    setLayerId("");
+  };
+
+  const handleBayChange = (nextBayId: string) => {
+    setBayId(nextBayId);
+    setLayers([]);
+    setLayerId("");
+  };
+
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -146,6 +290,11 @@ const NewStorageSpaceForm = () => {
 
     if (!warehouseId) {
       setError("Warehouse is required.");
+      return;
+    }
+
+    if (!layerId) {
+      setError("Layer is required.");
       return;
     }
 
@@ -174,6 +323,7 @@ const NewStorageSpaceForm = () => {
         },
         body: JSON.stringify({
           warehouseId,
+          layerId,
           name: trimmedName,
           code: trimmedCode,
           capacity: trimmedCapacity,
@@ -229,7 +379,8 @@ const NewStorageSpaceForm = () => {
         </h1>
 
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
-          Add a storage location to an active warehouse.
+          Add a storage location to a layer inside an active
+          warehouse.
         </p>
       </div>
 
@@ -255,10 +406,12 @@ const NewStorageSpaceForm = () => {
               Warehouse
             </label>
 
-            <select
-              id="warehouse"
-              value={warehouseId}
-              onChange={(event) => setWarehouseId(event.target.value)}
+              <select
+                id="warehouse"
+                value={warehouseId}
+                onChange={(event) =>
+                  handleWarehouseChange(event.target.value)
+                }
               disabled={isLoadingWarehouses || isSubmitting}
               className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
             >
@@ -281,6 +434,118 @@ const NewStorageSpaceForm = () => {
               </p>
             )}
           </div>
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            <div>
+              <label
+                htmlFor="aisle"
+                className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              >
+                Aisle
+              </label>
+
+              <select
+                id="aisle"
+                value={aisleId}
+                onChange={(event) =>
+                  handleAisleChange(event.target.value)
+                }
+                disabled={
+                  !warehouseId ||
+                  isLoadingLocations ||
+                  isSubmitting
+                }
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
+              >
+                <option value="">
+                  {!warehouseId
+                    ? "Select warehouse first"
+                    : "Select aisle"}
+                </option>
+
+                {aisles.map((aisle) => (
+                  <option key={aisle.id} value={aisle.id}>
+                    {aisle.name} ({aisle.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="bay"
+                className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              >
+                Bay
+              </label>
+
+              <select
+                id="bay"
+                value={bayId}
+                onChange={(event) =>
+                  handleBayChange(event.target.value)
+                }
+                disabled={
+                  !aisleId ||
+                  isLoadingLocations ||
+                  isSubmitting
+                }
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
+              >
+                <option value="">
+                  {!aisleId
+                    ? "Select aisle first"
+                    : "Select bay"}
+                </option>
+
+                {bays.map((bay) => (
+                  <option key={bay.id} value={bay.id}>
+                    {bay.name} ({bay.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="layer"
+                className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              >
+                Layer
+              </label>
+
+              <select
+                id="layer"
+                value={layerId}
+                onChange={(event) =>
+                  setLayerId(event.target.value)
+                }
+                disabled={
+                  !bayId ||
+                  isLoadingLocations ||
+                  isSubmitting
+                }
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 outline-none transition-colors focus:border-neutral-950 dark:focus:border-neutral-300 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-neutral-300 disabled:bg-neutral-50 dark:disabled:bg-neutral-800 "
+              >
+                <option value="">
+                  {!bayId ? "Select bay first" : "Select layer"}
+                </option>
+
+                {layers.map((layer) => (
+                  <option key={layer.id} value={layer.id}>
+                    {layer.name} ({layer.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {warehouseId && aisles.length === 0 && !isLoadingLocations && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 ">
+              This warehouse has no aisles yet — add one from
+              the warehouse page first.
+            </p>
+          )}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>

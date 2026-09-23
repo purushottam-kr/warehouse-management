@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { STORAGE_TYPES } from "@/lib/inventory/storage-type";
+import { formatLocationPath } from "@/lib/inventory/location-path";
 
 import type { ListPagination } from "@/types/pagination";
 import type {
@@ -39,7 +40,7 @@ const PAGE_SIZE = 25;
 
 const formatCapacity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -406,7 +407,7 @@ const StorageSpacesPage = () => {
                     </th>
 
                     <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Warehouse
+                      Location
                     </th>
 
                     <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
@@ -447,9 +448,18 @@ const StorageSpacesPage = () => {
                         </td>
 
                         <td className="px-5 py-4 text-sm text-neutral-700 dark:text-neutral-300">
-                          {
-                            storageSpace.warehouseName
-                          }
+                          {formatLocationPath({
+                            warehouseName:
+                              storageSpace.warehouseName,
+                            aisleName:
+                              storageSpace.aisleName,
+                            bayName:
+                              storageSpace.bayName,
+                            layerName:
+                              storageSpace.layerName,
+                            spaceName:
+                              storageSpace.name,
+                          })}
                         </td>
 
                         <td className="px-5 py-4 text-sm text-neutral-600 dark:text-neutral-400 ">

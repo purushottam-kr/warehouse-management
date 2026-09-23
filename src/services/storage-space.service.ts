@@ -8,6 +8,9 @@ import { isPostgresUniqueViolation } from "@/lib/errors/database";
 import { requireRole } from "@/lib/auth/authorization";
 import { createStorageSpaceRepository } from "@/repositories/storage-space.repository";
 import { createWarehouseRepository } from "@/repositories/warehouse.repository";
+import { createAisleRepository } from "@/repositories/aisle.repository";
+import { createBayRepository } from "@/repositories/bay.repository";
+import { createLayerRepository } from "@/repositories/layer.repository";
 import type {
   CreateStorageSpaceInput,
   ListStorageSpacesQuery,
@@ -27,14 +30,49 @@ const storageSpaceRepository =
 const warehouseRepository =
   createWarehouseRepository();
 
+const aisleRepository = createAisleRepository();
+
+const bayRepository = createBayRepository();
+
+const layerRepository = createLayerRepository();
+
 const STORAGE_SPACE_CODE_UNIQUE_CONSTRAINT =
   "storage_spaces_warehouse_code_unique";
 
 export const createStorageSpace = async (
   input: CreateStorageSpaceInput,
 ) => {
+  /*
+   * Step 5 contract: the layer is the canonical parent.
+   * Walk up layer -> bay -> aisle -> warehouse to
+   * resolve (and verify) the owning warehouse, then
+   * dual-write both columns so existing warehouse_id
+   * readers keep working until finalize drops it.
+   */
+  const layer = await layerRepository.findById(
+    input.layerId,
+  );
+
+  if (!layer) {
+    throw new NotFoundError("Layer not found.");
+  }
+
+  const bay = await bayRepository.findById(layer.bayId);
+
+  if (!bay) {
+    throw new NotFoundError("Bay not found.");
+  }
+
+  const aisle = await aisleRepository.findById(
+    bay.aisleId,
+  );
+
+  if (!aisle) {
+    throw new NotFoundError("Aisle not found.");
+  }
+
   const warehouse = await warehouseRepository.findById(
-    input.warehouseId,
+    aisle.warehouseId,
   );
 
   if (!warehouse) {
@@ -48,6 +86,16 @@ export const createStorageSpace = async (
     );
   }
 
+  if (
+    input.warehouseId !== undefined &&
+    input.warehouseId !== warehouse.id
+  ) {
+    throw new ConflictError(
+      "STORAGE_SPACE_WAREHOUSE_MISMATCH",
+      "The layer does not belong to the given warehouse.",
+    );
+  }
+
   const name = input.name.trim();
   const code = input.code.trim();
   const storageType = normalizeStorageType(
@@ -55,21 +103,22 @@ export const createStorageSpace = async (
   );
 
   const existingSpace =
-    await storageSpaceRepository.findByCode(
-      input.warehouseId,
+    await storageSpaceRepository.findByCodeInLayer(
+      input.layerId,
       code,
     );
 
   if (existingSpace) {
     throw new ConflictError(
       "STORAGE_SPACE_CODE_ALREADY_EXISTS",
-      "A storage space with this code already exists in this warehouse.",
+      "A storage space with this code already exists in this layer.",
     );
   }
 
   try {
     return await storageSpaceRepository.create({
-      warehouseId: input.warehouseId,
+      warehouseId: warehouse.id,
+      layerId: input.layerId,
       name,
       code,
       capacity: input.capacity,
@@ -87,7 +136,7 @@ export const createStorageSpace = async (
     ) {
       throw new ConflictError(
         "STORAGE_SPACE_CODE_ALREADY_EXISTS",
-        "A storage space with this code already exists in this warehouse.",
+        "A storage space with this code already exists in this layer.",
       );
     }
 
@@ -121,6 +170,23 @@ export const listStorageSpacesByWarehouse = async (
   return storageSpaceRepository.findManyByWarehouseId(
     warehouseId,
   );
+};
+
+/*
+ * Step 8: full location path for display surfaces —
+ * Warehouse / Aisle / Bay / Layer / Space.
+ */
+export const getStorageSpaceLocationPath = async (
+  id: string,
+) => {
+  const path =
+    await storageSpaceRepository.getLocationPath(id);
+
+  if (!path) {
+    throw new NotFoundError("Storage space not found.");
+  }
+
+  return path;
 };
 
 export const listStorageSpaces = async () => {

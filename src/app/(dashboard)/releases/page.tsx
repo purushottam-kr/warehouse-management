@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import type { ItemAllocationSummary } from "@/types/allocation";
+import { formatLocationPath } from "@/lib/inventory/location-path";
 
 type Item = {
   id: string;
@@ -52,7 +53,7 @@ const QUANTITY_PATTERN = /^\d{1,9}(\.\d{1,3})?$/;
 
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -651,7 +652,18 @@ const ReleasesWorkspace = () => {
                       </p>
 
                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 ">
-                        {selectedLocation.warehouseName}{" "}
+                        {formatLocationPath({
+                          warehouseName:
+                            selectedLocation.warehouseName,
+                          aisleName:
+                            selectedLocation.aisleName,
+                          bayName:
+                            selectedLocation.bayName,
+                          layerName:
+                            selectedLocation.layerName,
+                          spaceName:
+                            selectedLocation.storageSpaceName,
+                        })}{" "}
                         ·{" "}
                         {
                           selectedLocation.storageType

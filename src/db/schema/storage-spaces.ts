@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { warehouses } from "./warehouses";
+import { layers } from "./layers";
 
 export const storageSpaceStatusEnum = pgEnum(
   "storage_space_status",
@@ -28,6 +29,17 @@ export const storageSpaces = pgTable(
       .references(() => warehouses.id, {
         onDelete: "restrict",
       }),
+
+    /*
+     * Step 1 (additive only) of the physical-hierarchy
+     * expansion: nullable parent pointer for the
+     * backfill. warehouse_id stays NOT NULL until
+     * Step 3 finalize drops it after backfill verifies
+     * zero nulls remain.
+     */
+    layerId: uuid("layer_id").references(() => layers.id, {
+      onDelete: "restrict",
+    }),
 
     name: text("name").notNull(),
 
@@ -65,6 +77,8 @@ export const storageSpaces = pgTable(
     index("storage_spaces_warehouse_id_idx").on(
       table.warehouseId,
     ),
+
+    index("storage_spaces_layer_id_idx").on(table.layerId),
 
     check(
       "storage_spaces_capacity_positive",

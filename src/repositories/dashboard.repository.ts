@@ -15,11 +15,28 @@ import type { MovementActivity } from "@/types/inventory-movement";
 
 const movementRepository = createInventoryMovementRepository();
 
+/*
+ * Step 6: warehouse membership resolves through the
+ * physical hierarchy (space -> layer -> bay -> aisle ->
+ * warehouse). The `OR sp.layer_id IS NULL` branch is
+ * transition-only for legacy-shaped rows; finalize
+ * drops it with the warehouse_id column.
+ */
 const totalWarehouseCapacitySql = sql<string>`
   (
     SELECT COALESCE(SUM(sp.capacity), 0)
     FROM storage_spaces sp
-    WHERE sp.warehouse_id = warehouses.id
+    LEFT JOIN layers ly
+      ON ly.id = sp.layer_id
+    LEFT JOIN bays ba
+      ON ba.id = ly.bay_id
+    LEFT JOIN aisles ai
+      ON ai.id = ba.aisle_id
+    WHERE ai.warehouse_id = warehouses.id
+       OR (
+         sp.layer_id IS NULL
+         AND sp.warehouse_id = warehouses.id
+       )
   )
 `;
 
@@ -29,7 +46,17 @@ const allocatedWarehouseQuantitySql = sql<string>`
     FROM allocations al
     INNER JOIN storage_spaces sp
       ON sp.id = al.storage_space_id
-    WHERE sp.warehouse_id = warehouses.id
+    LEFT JOIN layers ly
+      ON ly.id = sp.layer_id
+    LEFT JOIN bays ba
+      ON ba.id = ly.bay_id
+    LEFT JOIN aisles ai
+      ON ai.id = ba.aisle_id
+    WHERE ai.warehouse_id = warehouses.id
+       OR (
+         sp.layer_id IS NULL
+         AND sp.warehouse_id = warehouses.id
+       )
   )
 `;
 

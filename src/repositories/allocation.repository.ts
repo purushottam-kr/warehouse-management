@@ -4,13 +4,18 @@ import {
   and,
   asc,
   eq,
+  isNull,
+  or,
   sql,
 } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
+  aisles,
   allocations,
+  bays,
   items,
+  layers,
   storageSpaces,
   warehouses,
 } from "@/db/schema";
@@ -18,6 +23,25 @@ import {
 type DbTransaction = Parameters<
   Parameters<typeof db.transaction>[0]
 >[0];
+
+/*
+ * Step 6: warehouse membership resolves through the
+ * physical hierarchy (space -> layer -> bay -> aisle ->
+ * warehouse). The `layer_id IS NULL` branch is
+ * transition-only: it keeps legacy-shaped rows (not yet
+ * backfilled) attributed exactly as before. Finalize
+ * drops it along with the warehouse_id column.
+ *
+ * Dual-write guarantees both branches agree on the same
+ * warehouse, so a space matches exactly one row.
+ */
+const warehouseMembershipCondition = or(
+  eq(aisles.warehouseId, warehouses.id),
+  and(
+    isNull(storageSpaces.layerId),
+    eq(storageSpaces.warehouseId, warehouses.id),
+  ),
+);
 
 export const createAllocationRepository = (
   database: typeof db = db,
@@ -151,12 +175,15 @@ export const createAllocationRepository = (
         storageType: storageSpaces.storageType,
       })
       .from(storageSpaces)
+      .leftJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .leftJoin(bays, eq(layers.bayId, bays.id))
+      .leftJoin(aisles, eq(bays.aisleId, aisles.id))
       .innerJoin(
         warehouses,
-        eq(
-          storageSpaces.warehouseId,
-          warehouses.id,
-        ),
+        warehouseMembershipCondition,
       )
       .leftJoin(
         allocations,
@@ -186,6 +213,11 @@ export const createAllocationRepository = (
    *
    * One row per storage space holding this item, with the
    * summed allocation quantity as an exact decimal string.
+   *
+   * Step 8: aisle/bay/layer segments ride along for the
+   * full-path display (LEFT JOINs — null for legacy
+   * rows). Every non-aggregated select appears in the
+   * GROUP BY below.
    */
   const getItemAllocationBreakdown = async (
     itemId: string,
@@ -198,6 +230,12 @@ export const createAllocationRepository = (
         storageType: storageSpaces.storageType,
         warehouseId: warehouses.id,
         warehouseName: warehouses.name,
+        aisleName: aisles.name,
+        aisleCode: aisles.code,
+        bayName: bays.name,
+        bayCode: bays.code,
+        layerName: layers.name,
+        layerCode: layers.code,
         quantity: sql<string>`
           COALESCE(
             SUM(${allocations.quantity}),
@@ -213,12 +251,15 @@ export const createAllocationRepository = (
           storageSpaces.id,
         ),
       )
+      .leftJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .leftJoin(bays, eq(layers.bayId, bays.id))
+      .leftJoin(aisles, eq(bays.aisleId, aisles.id))
       .innerJoin(
         warehouses,
-        eq(
-          storageSpaces.warehouseId,
-          warehouses.id,
-        ),
+        warehouseMembershipCondition,
       )
       .where(eq(allocations.itemId, itemId))
       .groupBy(
@@ -228,6 +269,12 @@ export const createAllocationRepository = (
         storageSpaces.storageType,
         warehouses.id,
         warehouses.name,
+        aisles.name,
+        aisles.code,
+        bays.name,
+        bays.code,
+        layers.name,
+        layers.code,
       )
       .orderBy(
         asc(storageSpaces.name),
@@ -432,20 +479,32 @@ const getAllocatedQuantityForWarehouse = async (
   const executor = transaction ?? database;
 
   const [result] = await executor
-    .select({
-      total: sql<string>`COALESCE(SUM(${allocations.quantity}), 0)`,
-    })
-    .from(allocations)
-    .innerJoin(
-      storageSpaces,
-      eq(
-        allocations.storageSpaceId,
-        storageSpaces.id,
-      ),
-    )
-    .where(
-      eq(storageSpaces.warehouseId, warehouseId),
-    );
+      .select({
+        total: sql<string>`COALESCE(SUM(${allocations.quantity}), 0)`,
+      })
+      .from(allocations)
+      .innerJoin(
+        storageSpaces,
+        eq(
+          allocations.storageSpaceId,
+          storageSpaces.id,
+        ),
+      )
+      .leftJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .leftJoin(bays, eq(layers.bayId, bays.id))
+      .leftJoin(aisles, eq(bays.aisleId, aisles.id))
+      .where(
+        or(
+          eq(aisles.warehouseId, warehouseId),
+          and(
+            isNull(storageSpaces.layerId),
+            eq(storageSpaces.warehouseId, warehouseId),
+          ),
+        ),
+      );
 
   return result.total;
 };

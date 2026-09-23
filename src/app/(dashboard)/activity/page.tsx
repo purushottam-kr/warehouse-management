@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { formatLocationPath } from "@/lib/inventory/location-path";
+
 type MovementType = "ALLOCATE" | "MOVE" | "RELEASE";
 
 type MovementActivity = {
@@ -26,12 +28,18 @@ type MovementActivity = {
     name: string;
     code: string;
     warehouseName: string;
+    aisleName: string | null;
+    bayName: string | null;
+    layerName: string | null;
   } | null;
   to: {
     id: string;
     name: string;
     code: string;
     warehouseName: string;
+    aisleName: string | null;
+    bayName: string | null;
+    layerName: string | null;
   } | null;
   performedBy: {
     id: string;
@@ -73,7 +81,7 @@ const PAGE_SIZE = 25;
 
 const formatQuantity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -496,10 +504,22 @@ const ActivityPage = () => {
                             </p>
 
                             <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                              {
-                                movement.from
-                                  .warehouseName
-                              }
+                              {formatLocationPath({
+                                warehouseName:
+                                  movement.from
+                                    .warehouseName,
+                                aisleName:
+                                  movement.from
+                                    .aisleName,
+                                bayName:
+                                  movement.from
+                                    .bayName,
+                                layerName:
+                                  movement.from
+                                    .layerName,
+                                spaceName:
+                                  movement.from.name,
+                              })}
                             </p>
                           </>
                         ) : (
@@ -517,10 +537,21 @@ const ActivityPage = () => {
                             </p>
 
                             <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                              {
-                                movement.to
-                                  .warehouseName
-                              }
+                              {formatLocationPath({
+                                warehouseName:
+                                  movement.to
+                                    .warehouseName,
+                                aisleName:
+                                  movement.to
+                                    .aisleName,
+                                bayName:
+                                  movement.to.bayName,
+                                layerName:
+                                  movement.to
+                                    .layerName,
+                                spaceName:
+                                  movement.to.name,
+                              })}
                             </p>
                           </>
                         ) : (

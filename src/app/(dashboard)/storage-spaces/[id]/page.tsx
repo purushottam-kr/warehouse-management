@@ -5,11 +5,14 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { formatLocationPath } from "@/lib/inventory/location-path";
+
 type StorageSpaceStatus = "ACTIVE" | "INACTIVE";
 
 type StorageSpace = {
   id: string;
   warehouseId: string;
+  layerId: string | null;
   name: string;
   code: string;
   capacity: string;
@@ -17,6 +20,16 @@ type StorageSpace = {
   status: StorageSpaceStatus;
   createdAt: string;
   updatedAt: string;
+};
+
+type LocationPath = {
+  spaceId: string;
+  spaceName: string;
+  spaceCode: string;
+  layerName: string | null;
+  bayName: string | null;
+  aisleName: string | null;
+  warehouseName: string;
 };
 
 type InventoryRow = {
@@ -33,6 +46,10 @@ type ApiResponse = {
 
 type InventoryResponse = {
   data: InventoryRow[];
+};
+
+type LocationPathResponse = {
+  data: LocationPath;
 };
 
 type ApiErrorResponse = {
@@ -53,7 +70,7 @@ type UserResponse = {
 
 const formatCapacity = (value: string) =>
   Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 3,
   });
 
@@ -74,7 +91,7 @@ const StorageSpaceDetailPage = () => {
   const router = useRouter();
 
   const [storageSpace, setStorageSpace] = useState<StorageSpace | null>(null);
-  const [warehouseName, setWarehouseName] = useState("");
+  const [locationPath, setLocationPath] = useState("");
   const [inventory, setInventory] = useState<InventoryRow[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -89,7 +106,7 @@ const StorageSpaceDetailPage = () => {
 
         const [
           storageResponse,
-          warehouseResponse,
+          pathResponse,
           userResponse,
           inventoryResponse,
         ] =
@@ -97,9 +114,12 @@ const StorageSpaceDetailPage = () => {
             fetch(`/api/storage-spaces/${params.id}`, {
               cache: "no-store",
             }),
-            fetch("/api/warehouses", {
-              cache: "no-store",
-            }),
+            fetch(
+              `/api/storage-spaces/${params.id}/location-path`,
+              {
+                cache: "no-store",
+              },
+            ),
             fetch("/api/auth/me", {
               cache: "no-store",
             }),
@@ -113,13 +133,8 @@ const StorageSpaceDetailPage = () => {
             | ApiResponse
             | ApiErrorResponse;
 
-        const warehouseData = (await warehouseResponse.json()) as
-          | {
-              data: Array<{
-                id: string;
-                name: string;
-              }>;
-            }
+        const pathData = (await pathResponse.json()) as
+          | LocationPathResponse
           | ApiErrorResponse;
 
         const userData =
@@ -138,8 +153,8 @@ const StorageSpaceDetailPage = () => {
           );
         }
 
-        if (!warehouseResponse.ok) {
-          throw new Error("Unable to load warehouse information.");
+        if (!pathResponse.ok) {
+          throw new Error("Unable to load location information.");
         }
 
         if (!userResponse.ok) {
@@ -157,19 +172,23 @@ const StorageSpaceDetailPage = () => {
 
         if (
           !("data" in storageData) ||
-          !("data" in warehouseData) ||
+          !("data" in pathData) ||
           !("user" in userData) ||
           !("data" in inventoryData)
         ) {
           throw new Error("Invalid storage space response.");
         }
 
-        const warehouse = warehouseData.data.find(
-          (item) => item.id === storageData.data.warehouseId,
-        );
-
         setStorageSpace(storageData.data);
-        setWarehouseName(warehouse?.name ?? "Unknown warehouse");
+        setLocationPath(
+          formatLocationPath({
+            warehouseName: pathData.data.warehouseName,
+            aisleName: pathData.data.aisleName,
+            bayName: pathData.data.bayName,
+            layerName: pathData.data.layerName,
+            spaceName: pathData.data.spaceName,
+          }),
+        );
         setIsAdmin(userData.user.role === "ADMIN");
         setInventory(inventoryData.data);
       } catch (error) {
@@ -317,7 +336,7 @@ const StorageSpaceDetailPage = () => {
           </div>
 
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 ">
-            {warehouseName} · {storageSpace.code}
+            {locationPath || storageSpace.code}
           </p>
         </div>
 
@@ -360,10 +379,10 @@ const StorageSpaceDetailPage = () => {
         <div className="grid gap-px bg-neutral-200 dark:bg-neutral-700 md:grid-cols-2">
           <div className="bg-white dark:bg-neutral-900 px-5 py-4">
             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 ">
-              Warehouse
+              Location
             </p>
             <p className="mt-1 text-sm font-medium text-neutral-950 dark:text-neutral-100">
-              {warehouseName}
+              {locationPath || "—"}
             </p>
           </div>
 

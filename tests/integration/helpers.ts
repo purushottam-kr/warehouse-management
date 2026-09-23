@@ -157,18 +157,77 @@ export type TestStorageSpace = {
   capacity: string;
 };
 
+/*
+ * Step 5 contract: storage spaces are created under a
+ * layer. Each seeded space gets its own
+ * aisle -> bay -> layer chain so per-parent code
+ * uniqueness can never collide across seeds.
+ */
 export const seedStorageSpace = async (
   warehouseId: string,
   key: string,
   capacity: string,
   storageType: string,
 ): Promise<TestStorageSpace> => {
+  const aisleResult = await request<{ data: { id: string } }>(
+    "POST",
+    `/api/warehouses/${warehouseId}/aisles`,
+    {
+      name: `Aisle ${key}`,
+      code: `A-${RUN_ID}-${key}`.slice(0, 50),
+    },
+  );
+
+  if (aisleResult.status !== 201) {
+    throw new Error(
+      `Aisle creation failed: ${aisleResult.status} ${JSON.stringify(aisleResult.body)}`,
+    );
+  }
+
+  const aisleId = aisleResult.body.data.id;
+  createdAisleIds.push(aisleId);
+
+  const bayResult = await request<{ data: { id: string } }>(
+    "POST",
+    `/api/aisles/${aisleId}/bays`,
+    {
+      name: `Bay ${key}`,
+      code: `B-${RUN_ID}-${key}`.slice(0, 50),
+    },
+  );
+
+  if (bayResult.status !== 201) {
+    throw new Error(
+      `Bay creation failed: ${bayResult.status} ${JSON.stringify(bayResult.body)}`,
+    );
+  }
+
+  const bayId = bayResult.body.data.id;
+  createdBayIds.push(bayId);
+
+  const layerResult = await request<{
+    data: { id: string };
+  }>("POST", `/api/bays/${bayId}/layers`, {
+    name: `Layer ${key}`,
+    code: `L-${RUN_ID}-${key}`.slice(0, 50),
+  });
+
+  if (layerResult.status !== 201) {
+    throw new Error(
+      `Layer creation failed: ${layerResult.status} ${JSON.stringify(layerResult.body)}`,
+    );
+  }
+
+  const layerId = layerResult.body.data.id;
+  createdLayerIds.push(layerId);
+
   const { status, body } =
     await request<{ data: TestStorageSpace }>(
       "POST",
       `/api/warehouses/${warehouseId}/storage-spaces`,
       {
         warehouseId,
+        layerId,
         name: `Space ${key}`,
         code: `SP-${RUN_ID}-${key}`,
         capacity,
@@ -386,6 +445,12 @@ export const getMovementsForItem = async (
 
 const createdWarehouseIds: string[] = [];
 
+const createdAisleIds: string[] = [];
+
+const createdBayIds: string[] = [];
+
+const createdLayerIds: string[] = [];
+
 const createdStorageSpaceIds: string[] = [];
 
 const createdItemIds: string[] = [];
@@ -399,6 +464,7 @@ export const trackUser = (userId: string): void => {
 export const cleanup = async (): Promise<void> => {
   if (
     createdWarehouseIds.length === 0 &&
+    createdAisleIds.length === 0 &&
     createdItemIds.length === 0 &&
     createdUserIds.length === 0
   ) {
@@ -406,6 +472,9 @@ export const cleanup = async (): Promise<void> => {
   }
 
   const spaceIds = createdStorageSpaceIds;
+  const layerIds = createdLayerIds;
+  const bayIds = createdBayIds;
+  const aisleIds = createdAisleIds;
   const itemIds = createdItemIds;
   const warehouseIds = createdWarehouseIds;
   const userIds = createdUserIds;
@@ -440,6 +509,27 @@ export const cleanup = async (): Promise<void> => {
       await client.query(
         "DELETE FROM storage_spaces WHERE id = ANY($1::uuid[])",
         [spaceIds],
+      );
+    }
+
+    if (layerIds.length > 0) {
+      await client.query(
+        "DELETE FROM layers WHERE id = ANY($1::uuid[])",
+        [layerIds],
+      );
+    }
+
+    if (bayIds.length > 0) {
+      await client.query(
+        "DELETE FROM bays WHERE id = ANY($1::uuid[])",
+        [bayIds],
+      );
+    }
+
+    if (aisleIds.length > 0) {
+      await client.query(
+        "DELETE FROM aisles WHERE id = ANY($1::uuid[])",
+        [aisleIds],
       );
     }
 

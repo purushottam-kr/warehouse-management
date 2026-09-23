@@ -13,8 +13,11 @@ import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/db";
 import {
+  aisles,
+  bays,
   inventoryMovements,
   items,
+  layers,
   storageSpaces,
   users,
   warehouses,
@@ -41,6 +44,18 @@ const toWarehouse = alias(
   warehouses,
   "to_warehouse",
 );
+
+/*
+ * Step 8: chain aliases for the full-path display.
+ * LEFT JOINs — null for legacy-shaped rows.
+ */
+const fromLayer = alias(layers, "from_layer");
+const fromBay = alias(bays, "from_bay");
+const fromAisle = alias(aisles, "from_aisle");
+
+const toLayer = alias(layers, "to_layer");
+const toBay = alias(bays, "to_bay");
+const toAisle = alias(aisles, "to_aisle");
 
 type DbTransaction = Parameters<
   Parameters<typeof db.transaction>[0]
@@ -181,10 +196,16 @@ export const createInventoryMovementRepository = () => {
         fromStorageSpaceName: fromSpace.name,
         fromStorageSpaceCode: fromSpace.code,
         fromWarehouseName: fromWarehouse.name,
+        fromAisleName: fromAisle.name,
+        fromBayName: fromBay.name,
+        fromLayerName: fromLayer.name,
         toStorageSpaceId: toSpace.id,
         toStorageSpaceName: toSpace.name,
         toStorageSpaceCode: toSpace.code,
         toWarehouseName: toWarehouse.name,
+        toAisleName: toAisle.name,
+        toBayName: toBay.name,
+        toLayerName: toLayer.name,
         performedById: users.id,
         performedByName: users.name,
         performedByEmail: users.email,
@@ -215,6 +236,18 @@ export const createInventoryMovementRepository = () => {
         eq(fromSpace.warehouseId, fromWarehouse.id),
       )
       .leftJoin(
+        fromLayer,
+        eq(fromSpace.layerId, fromLayer.id),
+      )
+      .leftJoin(
+        fromBay,
+        eq(fromLayer.bayId, fromBay.id),
+      )
+      .leftJoin(
+        fromAisle,
+        eq(fromBay.aisleId, fromAisle.id),
+      )
+      .leftJoin(
         toSpace,
         eq(
           inventoryMovements.toStorageSpaceId,
@@ -224,6 +257,18 @@ export const createInventoryMovementRepository = () => {
       .leftJoin(
         toWarehouse,
         eq(toSpace.warehouseId, toWarehouse.id),
+      )
+      .leftJoin(
+        toLayer,
+        eq(toSpace.layerId, toLayer.id),
+      )
+      .leftJoin(
+        toBay,
+        eq(toLayer.bayId, toBay.id),
+      )
+      .leftJoin(
+        toAisle,
+        eq(toBay.aisleId, toAisle.id),
       )
       .where(buildActivityFilters(filters))
       /*
@@ -245,6 +290,9 @@ export const createInventoryMovementRepository = () => {
             code: row.fromStorageSpaceCode ?? "",
             warehouseName:
               row.fromWarehouseName ?? "",
+            aisleName: row.fromAisleName,
+            bayName: row.fromBayName,
+            layerName: row.fromLayerName,
           }
         : null;
 
@@ -255,6 +303,9 @@ export const createInventoryMovementRepository = () => {
             code: row.toStorageSpaceCode ?? "",
             warehouseName:
               row.toWarehouseName ?? "",
+            aisleName: row.toAisleName,
+            bayName: row.toBayName,
+            layerName: row.toLayerName,
           }
         : null;
 
