@@ -4,14 +4,17 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
+  Eye,
   Plus,
   Search,
   Warehouse as WarehouseIcon,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { ListPagination } from "@/types/pagination";
 import type { WarehouseListRow } from "@/types/warehouse";
+import { WarehouseStructureTree } from "@/components/warehouse/warehouse-structure-tree";
 
 type WarehousesResponse = {
   data: WarehouseListRow[];
@@ -52,6 +55,33 @@ const WarehousesPage = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [viewWarehouse, setViewWarehouse] =
+    useState<WarehouseListRow | null>(null);
+
+  /*
+   * Quick-view modal: Escape closes, background
+   * scrolling locks while open.
+   */
+  useEffect(() => {
+    if (!viewWarehouse) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setViewWarehouse(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [viewWarehouse]);
 
   const hasFilters =
     searchInput.trim() !== "" || status !== "";
@@ -281,7 +311,7 @@ const WarehousesPage = () => {
         ) : (
           <>
             <div className="flex-1 min-h-0 overflow-auto">
-              <table className="w-full min-w-[720px]">
+              <table className="w-full min-w-[800px]">
                 <thead className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 shadow-2xs border-b border-neutral-200 dark:border-neutral-800">
                   <tr className="bg-neutral-50 dark:bg-neutral-950">
                     <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
@@ -302,6 +332,10 @@ const WarehousesPage = () => {
 
                     <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       Capacity
+                    </th>
+
+                    <th className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-950 px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -378,6 +412,19 @@ const WarehousesPage = () => {
                             ? "—"
                             : `${utilization}%`}
                         </td>
+
+                        <td className="px-5 py-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setViewWarehouse(warehouse)
+                            }
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 transition hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -440,6 +487,50 @@ const WarehousesPage = () => {
           </>
         )}
       </div>
+
+      {viewWarehouse ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setViewWarehouse(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Structure of ${viewWarehouse.name}`}
+        >
+          <div
+            className="flex max-h-[85vh] w-[92vw] flex-col overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl sm:w-[50vw] sm:min-w-[480px]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-neutral-200 dark:border-neutral-800 px-5 py-4">
+              <div>
+                <h2 className="text-base font-semibold tracking-tight text-neutral-950 dark:text-neutral-100">
+                  {viewWarehouse.name}
+                </h2>
+
+                <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400">
+                  {viewWarehouse.code} · Aisle → Bay →
+                  Layer → Space
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setViewWarehouse(null)}
+                aria-label="Close structure view"
+                autoFocus
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              <WarehouseStructureTree
+                warehouseId={viewWarehouse.id}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
