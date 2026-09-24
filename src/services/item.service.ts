@@ -23,6 +23,7 @@ import type {
   UpdateItemInput,
 } from "@/types/item";
 import { normalizeStorageType } from "@/lib/inventory/storage-type";
+import { resolvePagination } from "@/lib/api/pagination";
 
 const itemRepository = createItemRepository();
 const allocationRepository =
@@ -116,22 +117,16 @@ export const listItemsPage = async (
 ): Promise<ItemListPage> => {
   const total = await itemRepository.countItems(query);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(total / query.pageSize),
+  const { page, totalPages, offset } = resolvePagination(
+    total,
+    query.page,
+    query.pageSize,
   );
-
-  /*
-   * Clamp the requested page into the valid range so
-   * stale page numbers degrade to the nearest valid
-   * page instead of an empty result.
-   */
-  const page = Math.min(query.page, totalPages);
 
   const items = await itemRepository.findItems(
     query,
     query.pageSize,
-    (page - 1) * query.pageSize,
+    offset,
   );
 
   return {

@@ -1,5 +1,7 @@
 import "server-only";
 
+import Decimal from "decimal.js";
+
 import {
   ConflictError,
   NotFoundError,
@@ -19,6 +21,8 @@ import type {
 } from "@/types/storage-space";
 import { normalizeStorageType } from "@/lib/inventory/storage-type";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
+import { resolvePagination } from "@/lib/api/pagination";
+import { assertCanDeactivate } from "@/services/helpers/common";
 
 
 const allocationRepository =
@@ -103,15 +107,15 @@ export const createStorageSpace = async (
   );
 
   const existingSpace =
-    await storageSpaceRepository.findByCodeInLayer(
-      input.layerId,
+    await storageSpaceRepository.findByCode(
+      warehouse.id,
       code,
     );
 
   if (existingSpace) {
     throw new ConflictError(
       "STORAGE_SPACE_CODE_ALREADY_EXISTS",
-      "A storage space with this code already exists in this layer.",
+      "A storage space with this code already exists in this warehouse.",
     );
   }
 
@@ -136,7 +140,7 @@ export const createStorageSpace = async (
     ) {
       throw new ConflictError(
         "STORAGE_SPACE_CODE_ALREADY_EXISTS",
-        "A storage space with this code already exists in this layer.",
+        "A storage space with this code already exists in this warehouse.",
       );
     }
 
@@ -201,23 +205,17 @@ export const listStorageSpacesPage = async (
       query,
     );
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(total / query.pageSize),
+  const { page, totalPages, offset } = resolvePagination(
+    total,
+    query.page,
+    query.pageSize,
   );
-
-  /*
-   * Clamp the requested page into the valid range so
-   * stale page numbers degrade to the nearest valid
-   * page instead of an empty result.
-   */
-  const page = Math.min(query.page, totalPages);
 
   const storageSpaces =
     await storageSpaceRepository.findStorageSpaces(
       query,
       query.pageSize,
-      (page - 1) * query.pageSize,
+      offset,
     );
 
   return {
@@ -274,37 +272,48 @@ export const updateStorageSpace = async (
   }
 
   /*
-   * Capacity update is intentionally deferred.
-   *
-   * Once the allocation repository exists, we must verify:
-   *
-   *   new capacity >= SUM(allocations.quantity)
-   *
-   * Otherwise this invalid state could occur:
+   * Capacity must never drop below allocated inventory:
    *
    *   capacity = 50
-   *   allocated inventory = 80
-   *
-   * This check belongs here in the service layer, but it
-   * depends on the allocation repository that will be
-   * implemented during the allocation feature.
+   *   allocated inventory = 80  -> invalid
    */
   if (
-  input.capacity !== undefined &&
-  input.capacity !== existingSpace.capacity
-) {
-  const allocatedQuantity =
-    await allocationRepository.getAllocatedQuantityForStorageSpace(
-      existingSpace.id,
-    );
+    input.capacity !== undefined &&
+    input.capacity !== existingSpace.capacity
+  ) {
+    const allocatedQuantity =
+      await allocationRepository.getAllocatedQuantityForStorageSpace(
+        existingSpace.id,
+      );
 
-  if (Number(input.capacity) < Number(allocatedQuantity)) {
-    throw new ConflictError(
-      "CAPACITY_BELOW_ALLOCATED",
-      `Storage space capacity cannot be less than its allocated inventory (${allocatedQuantity}).`,
+    if (
+      new Decimal(input.capacity).lessThan(
+        new Decimal(allocatedQuantity),
+      )
+    ) {
+      throw new ConflictError(
+        "CAPACITY_BELOW_ALLOCATED",
+        `Storage space capacity cannot be less than its allocated inventory (${allocatedQuantity}).`,
+      );
+    }
+  }
+
+  if (
+    input.status === "INACTIVE" &&
+    existingSpace.status !== "INACTIVE"
+  ) {
+    const allocatedQuantity =
+      await allocationRepository.getAllocatedQuantityForStorageSpace(
+        existingSpace.id,
+      );
+
+    assertCanDeactivate(
+      input.status,
+      allocatedQuantity,
+      "STORAGE_SPACE_HAS_INVENTORY",
+      "a storage space",
     );
   }
-}
 
   const updateData: UpdateStorageSpaceInput = {
     ...(input.name !== undefined && {
@@ -315,8 +324,9 @@ export const updateStorageSpace = async (
       code: input.code.trim(),
     }),
 
-    // Capacity is intentionally excluded from actual updates
-    // until allocation checks are implemented.
+    ...(input.capacity !== undefined && {
+      capacity: input.capacity,
+    }),
 
     ...(input.storageType !== undefined && {
       storageType: normalizeStorageType(

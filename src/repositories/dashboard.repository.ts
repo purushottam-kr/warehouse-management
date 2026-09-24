@@ -68,6 +68,22 @@ const allocatedSpaceQuantitySql = sql<string>`
   )
 `;
 
+export type WarehouseCapacityTotals = {
+  id: string;
+  name: string;
+  code: string;
+  totalCapacity: string;
+  allocatedQuantity: string;
+};
+
+export type StorageSpaceCapacityTotals = {
+  id: string;
+  name: string;
+  code: string;
+  totalCapacity: string;
+  allocatedQuantity: string;
+};
+
 export const createDashboardRepository = () => {
   const getInventorySummary = async (): Promise<InventorySummary> => {
     const [warehouseCounts] = await db
@@ -107,7 +123,15 @@ export const createDashboardRepository = () => {
     };
   };
 
-  const getWarehouseCapacities = async (): Promise<WarehouseCapacitySummary[]> => {
+  /*
+   * Raw capacity totals — no business logic here.
+   * Percentage, threshold filtering, and sorting are
+   * owned by dashboard.service so the service is not
+   * a pass-through wrapper.
+   */
+  const getWarehouseCapacityTotals = async (): Promise<
+    WarehouseCapacityTotals[]
+  > => {
     const rows = await db
       .select({
         id: warehouses.id,
@@ -120,7 +144,42 @@ export const createDashboardRepository = () => {
       .where(eq(warehouses.status, "ACTIVE"))
       .orderBy(warehouses.name);
 
-    return rows.map((row) => {
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      code: row.code,
+      totalCapacity: row.totalCapacity || "0",
+      allocatedQuantity: row.allocatedQuantity || "0",
+    }));
+  };
+
+  const getStorageSpaceCapacityTotals = async (): Promise<
+    StorageSpaceCapacityTotals[]
+  > => {
+    const rows = await db
+      .select({
+        id: storageSpaces.id,
+        name: storageSpaces.name,
+        code: storageSpaces.code,
+        totalCapacity: storageSpaces.capacity,
+        allocatedQuantity: allocatedSpaceQuantitySql,
+      })
+      .from(storageSpaces)
+      .where(eq(storageSpaces.status, "ACTIVE"));
+
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      code: row.code,
+      totalCapacity: row.totalCapacity || "0",
+      allocatedQuantity: row.allocatedQuantity || "0",
+    }));
+  };
+
+  const getWarehouseCapacities = async (): Promise<WarehouseCapacitySummary[]> => {
+    const totals = await getWarehouseCapacityTotals();
+
+    return totals.map((row) => {
       const total = new Decimal(row.totalCapacity || "0");
       const allocated = new Decimal(row.allocatedQuantity || "0");
 
@@ -140,27 +199,10 @@ export const createDashboardRepository = () => {
   };
 
   const getLowCapacityAlerts = async (): Promise<LowCapacityAlert[]> => {
-    const warehouseRows = await db
-      .select({
-        id: warehouses.id,
-        name: warehouses.name,
-        code: warehouses.code,
-        totalCapacity: totalWarehouseCapacitySql,
-        allocatedQuantity: allocatedWarehouseQuantitySql,
-      })
-      .from(warehouses)
-      .where(eq(warehouses.status, "ACTIVE"));
-
-    const spaceRows = await db
-      .select({
-        id: storageSpaces.id,
-        name: storageSpaces.name,
-        code: storageSpaces.code,
-        totalCapacity: storageSpaces.capacity,
-        allocatedQuantity: allocatedSpaceQuantitySql,
-      })
-      .from(storageSpaces)
-      .where(eq(storageSpaces.status, "ACTIVE"));
+    const [warehouseRows, spaceRows] = await Promise.all([
+      getWarehouseCapacityTotals(),
+      getStorageSpaceCapacityTotals(),
+    ]);
 
     const alerts: LowCapacityAlert[] = [];
 
@@ -224,6 +266,8 @@ export const createDashboardRepository = () => {
 
   return {
     getInventorySummary,
+    getWarehouseCapacityTotals,
+    getStorageSpaceCapacityTotals,
     getWarehouseCapacities,
     getLowCapacityAlerts,
     getRecentActivity,

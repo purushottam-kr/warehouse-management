@@ -4,7 +4,13 @@ import {
   ConflictError,
   NotFoundError,
 } from "@/lib/errors/errors";
-import { isPostgresUniqueViolation } from "@/lib/errors/database";
+import { resolvePagination } from "@/lib/api/pagination";
+import {
+  assertCanDeactivate,
+  normalizeCode,
+  normalizeName,
+  throwConflictIfUniqueViolation,
+} from "@/services/helpers/common";
 import type {
   CreateWarehouseInput,
   ListWarehousesQuery,
@@ -23,7 +29,7 @@ const WAREHOUSE_CODE_UNIQUE_CONSTRAINT = "warehouses_code_unique";
 export const createWarehouse = async (
   input: CreateWarehouseInput,
 ) => {
-  const code = input.code.trim();
+  const code = normalizeCode(input.code);
 
   const existingWarehouse = await warehouseRepository.findByCode(code);
 
@@ -36,24 +42,17 @@ export const createWarehouse = async (
 
   try {
     return await warehouseRepository.create({
-      name: input.name.trim(),
+      name: normalizeName(input.name),
       code,
       address: input.address?.trim() || undefined,
     });
   } catch (error) {
-    if (
-      isPostgresUniqueViolation(
-        error,
-        WAREHOUSE_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "WAREHOUSE_CODE_ALREADY_EXISTS",
-        "A warehouse with this code already exists.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      WAREHOUSE_CODE_UNIQUE_CONSTRAINT,
+      "WAREHOUSE_CODE_ALREADY_EXISTS",
+      "A warehouse with this code already exists.",
+    );
   }
 };
 
@@ -78,23 +77,17 @@ export const listWarehousesPage = async (
     query,
   );
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(total / query.pageSize),
+  const { page, totalPages, offset } = resolvePagination(
+    total,
+    query.page,
+    query.pageSize,
   );
-
-  /*
-   * Clamp the requested page into the valid range so
-   * stale page numbers degrade to the nearest valid
-   * page instead of an empty result.
-   */
-  const page = Math.min(query.page, totalPages);
 
   const warehouses =
     await warehouseRepository.findWarehouses(
       query,
       query.pageSize,
-      (page - 1) * query.pageSize,
+      offset,
     );
 
   return {
@@ -114,8 +107,15 @@ export const updateWarehouse = async (
 ) => {
   const existingWarehouse = await getWarehouseById(id);
 
+  if (existingWarehouse.deletedAt !== null) {
+    throw new ConflictError(
+      "WAREHOUSE_DELETED",
+      "Cannot update a deleted warehouse.",
+    );
+  }
+
   if (input.code !== undefined) {
-    const code = input.code.trim();
+    const code = normalizeCode(input.code);
 
     if (code !== existingWarehouse.code) {
       const warehouseWithSameCode =
@@ -135,10 +135,10 @@ export const updateWarehouse = async (
 
   const updateData: UpdateWarehouseInput = {
     ...(input.name !== undefined && {
-      name: input.name.trim(),
+      name: normalizeName(input.name),
     }),
     ...(input.code !== undefined && {
-      code: input.code.trim(),
+      code: normalizeCode(input.code),
     }),
     ...(input.address !== undefined && {
       address: input.address?.trim() || null,
@@ -147,6 +147,28 @@ export const updateWarehouse = async (
       status: input.status,
     }),
   };
+
+  /*
+   * Deactivation must obey the same inventory rule as
+   * deletion — otherwise callers bypass the delete
+   * guard by setting status to INACTIVE.
+   */
+  if (
+    input.status === "INACTIVE" &&
+    existingWarehouse.status !== "INACTIVE"
+  ) {
+    const allocatedQuantity =
+      await allocationRepository.getAllocatedQuantityForWarehouse(
+        id,
+      );
+
+    assertCanDeactivate(
+      input.status,
+      allocatedQuantity,
+      "WAREHOUSE_HAS_INVENTORY",
+      "a warehouse",
+    );
+  }
 
   try {
     const updatedWarehouse = await warehouseRepository.update(
@@ -160,19 +182,12 @@ export const updateWarehouse = async (
 
     return updatedWarehouse;
   } catch (error) {
-    if (
-      isPostgresUniqueViolation(
-        error,
-        WAREHOUSE_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "WAREHOUSE_CODE_ALREADY_EXISTS",
-        "A warehouse with this code already exists.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      WAREHOUSE_CODE_UNIQUE_CONSTRAINT,
+      "WAREHOUSE_CODE_ALREADY_EXISTS",
+      "A warehouse with this code already exists.",
+    );
   }
 };
 

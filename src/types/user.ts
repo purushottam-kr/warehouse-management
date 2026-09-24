@@ -14,3 +14,16 @@ export type UpdateUserInput = {
   role?: UserRole;
   isActive?: boolean;
 };
+
+export type ListUsersQuery = {
+  page: number;
+  pageSize: number;
+  search?: string;
+  role?: UserRole;
+  isActive?: boolean;
+};
+
+export type UserListPage = {
+  users: AdminUser[];
+  pagination: import("@/types/pagination").ListPagination;
+};

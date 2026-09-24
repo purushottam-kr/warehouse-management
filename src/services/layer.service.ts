@@ -4,21 +4,29 @@ import {
   ConflictError,
   NotFoundError,
 } from "@/lib/errors/errors";
-import { isPostgresUniqueViolation } from "@/lib/errors/database";
 import { requireRole } from "@/lib/auth/authorization";
+import {
+  assertCanDeactivate,
+  assertWarehouseNotDeleted,
+  normalizeCode,
+  normalizeName,
+  throwConflictIfUniqueViolation,
+} from "@/services/helpers/common";
+import { createAisleRepository } from "@/repositories/aisle.repository";
 import { createBayRepository } from "@/repositories/bay.repository";
 import { createLayerRepository } from "@/repositories/layer.repository";
-import { createStorageSpaceRepository } from "@/repositories/storage-space.repository";
+import { createWarehouseRepository } from "@/repositories/warehouse.repository";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
 import type {
   CreateLayerInput,
   UpdateLayerInput,
 } from "@/types/layer";
 
+const aisleRepository = createAisleRepository();
 const bayRepository = createBayRepository();
 const layerRepository = createLayerRepository();
-const storageSpaceRepository =
-  createStorageSpaceRepository();
+const warehouseRepository =
+  createWarehouseRepository();
 const allocationRepository =
   createAllocationRepository();
 
@@ -36,8 +44,22 @@ export const createLayer = async (
     throw new NotFoundError("Bay not found.");
   }
 
-  const name = input.name.trim();
-  const code = input.code.trim();
+  const aisle = await aisleRepository.findById(
+    bay.aisleId,
+  );
+
+  if (!aisle) {
+    throw new NotFoundError("Aisle not found.");
+  }
+
+  const warehouse = await warehouseRepository.findById(
+    aisle.warehouseId,
+  );
+
+  assertWarehouseNotDeleted(warehouse, "create a layer");
+
+  const name = normalizeName(input.name);
+  const code = normalizeCode(input.code);
 
   const existingLayer =
     await layerRepository.findByCode(
@@ -62,19 +84,12 @@ export const createLayer = async (
     // The pre-check above improves the error response,
     // but PostgreSQL's UNIQUE constraint is the actual
     // concurrency protection.
-    if (
-      isPostgresUniqueViolation(
-        error,
-        LAYER_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "LAYER_CODE_ALREADY_EXISTS",
-        "A layer with this code already exists in this bay.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      LAYER_CODE_UNIQUE_CONSTRAINT,
+      "LAYER_CODE_ALREADY_EXISTS",
+      "A layer with this code already exists in this bay.",
+    );
   }
 };
 
@@ -106,8 +121,30 @@ export const updateLayer = async (
 ) => {
   const existingLayer = await getLayerById(id);
 
+  const bay = await bayRepository.findById(
+    existingLayer.bayId,
+  );
+
+  if (!bay) {
+    throw new NotFoundError("Bay not found.");
+  }
+
+  const aisle = await aisleRepository.findById(
+    bay.aisleId,
+  );
+
+  if (!aisle) {
+    throw new NotFoundError("Aisle not found.");
+  }
+
+  const warehouse = await warehouseRepository.findById(
+    aisle.warehouseId,
+  );
+
+  assertWarehouseNotDeleted(warehouse, "update a layer");
+
   if (input.code !== undefined) {
-    const code = input.code.trim();
+    const code = normalizeCode(input.code);
 
     if (code !== existingLayer.code) {
       const existingWithCode =
@@ -127,17 +164,34 @@ export const updateLayer = async (
 
   const updateData: UpdateLayerInput = {
     ...(input.name !== undefined && {
-      name: input.name.trim(),
+      name: normalizeName(input.name),
     }),
 
     ...(input.code !== undefined && {
-      code: input.code.trim(),
+      code: normalizeCode(input.code),
     }),
 
     ...(input.status !== undefined && {
       status: input.status,
     }),
   };
+
+  if (
+    input.status === "INACTIVE" &&
+    existingLayer.status !== "INACTIVE"
+  ) {
+    const allocatedQuantity =
+      await allocationRepository.getAllocatedQuantityForLayer(
+        id,
+      );
+
+    assertCanDeactivate(
+      input.status,
+      allocatedQuantity,
+      "LAYER_HAS_INVENTORY",
+      "a layer",
+    );
+  }
 
   try {
     const updatedLayer = await layerRepository.update(
@@ -151,50 +205,36 @@ export const updateLayer = async (
 
     return updatedLayer;
   } catch (error) {
-    if (
-      isPostgresUniqueViolation(
-        error,
-        LAYER_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "LAYER_CODE_ALREADY_EXISTS",
-        "A layer with this code already exists in this bay.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      LAYER_CODE_UNIQUE_CONSTRAINT,
+      "LAYER_CODE_ALREADY_EXISTS",
+      "A layer with this code already exists in this bay.",
+    );
   }
 };
 
 /*
- * Deletion guard: a layer cannot be removed while any
- * of its storage spaces holds allocated inventory.
- * This is the base case of the recursive guard —
- * bay and aisle walk down to this same check.
+ * Single-query deletion guard: sums all allocations in
+ * this layer's storage spaces in one aggregate.
+ * Base case of the hierarchy guard — bay and aisle
+ * use the same pattern scoped to their subtree.
  */
 export const deleteLayer = async (id: string) => {
   await requireRole("ADMIN");
 
   const layer = await getLayerById(id);
 
-  const spaces =
-    await storageSpaceRepository.findManyByLayerId(
+  const allocatedQuantity =
+    await allocationRepository.getAllocatedQuantityForLayer(
       layer.id,
     );
 
-  for (const space of spaces) {
-    const allocatedQuantity =
-      await allocationRepository.getAllocatedQuantityForStorageSpace(
-        space.id,
-      );
-
-    if (Number(allocatedQuantity) > 0) {
-      throw new ConflictError(
-        "LAYER_HAS_INVENTORY",
-        "Cannot delete a layer that contains inventory.",
-      );
-    }
+  if (Number(allocatedQuantity) > 0) {
+    throw new ConflictError(
+      "LAYER_HAS_INVENTORY",
+      "Cannot delete a layer that contains inventory.",
+    );
   }
 
   const deletedLayer = await layerRepository.remove(id);

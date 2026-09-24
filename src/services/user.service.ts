@@ -4,11 +4,15 @@ import {
   ConflictError,
   NotFoundError,
 } from "@/lib/errors/errors";
+import { resolvePagination } from "@/lib/api/pagination";
+import { requirePermission } from "@/lib/auth/authorization";
 import { deleteAllUserSessions } from "@/lib/auth/session";
 import { createUserRepository } from "@/repositories/user.repository";
 import type {
   AdminUser,
+  ListUsersQuery,
   UpdateUserInput,
+  UserListPage,
 } from "@/types/user";
 
 const userRepository = createUserRepository();
@@ -16,13 +20,65 @@ const userRepository = createUserRepository();
 export const listUsers = async (): Promise<
   AdminUser[]
 > => {
+  await requirePermission("USER_MANAGE");
+
   return userRepository.findMany();
+};
+
+export const getUserById = async (
+  id: string,
+): Promise<AdminUser> => {
+  await requirePermission("USER_MANAGE");
+
+  const user = await userRepository.findById(id);
+
+  if (!user) {
+    throw new NotFoundError("User not found.");
+  }
+
+  return user;
+};
+
+export const listUsersPage = async (
+  query: ListUsersQuery,
+): Promise<UserListPage> => {
+  await requirePermission("USER_MANAGE");
+
+  const search = query.search?.trim() || undefined;
+
+  const filters = { ...query, search };
+
+  const total = await userRepository.countUsers(filters);
+
+  const { page, totalPages, offset } = resolvePagination(
+    total,
+    query.page,
+    query.pageSize,
+  );
+
+  const users = await userRepository.findUsers(
+    filters,
+    query.pageSize,
+    offset,
+  );
+
+  return {
+    users,
+    pagination: {
+      page,
+      pageSize: query.pageSize,
+      total,
+      totalPages,
+    },
+  };
 };
 
 export const updateUser = async (
   id: string,
   input: UpdateUserInput,
 ): Promise<AdminUser> => {
+  await requirePermission("USER_MANAGE");
+
   const user = await userRepository.findById(id);
 
   if (!user) {

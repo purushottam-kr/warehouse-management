@@ -509,9 +509,102 @@ const getAllocatedQuantityForWarehouse = async (
   return result.total;
 };
 
+  /*
+   * Single-query deletion guards for the hierarchy.
+   *
+   * Replaces the N+1 walk (bays -> layers -> spaces ->
+   * per-space SUM) in aisle/bay/layer services.
+   * Legacy rows with NULL layer_id hold no aisle/bay/
+   * layer membership, so inner joins correctly exclude
+   * them here.
+   */
+  const getAllocatedQuantityForAisle = async (
+    aisleId: string,
+    transaction?: DbTransaction,
+  ) => {
+    const executor = transaction ?? database;
+
+    const [result] = await executor
+      .select({
+        total: sql<string>`COALESCE(SUM(${allocations.quantity}), 0)`,
+      })
+      .from(allocations)
+      .innerJoin(
+        storageSpaces,
+        eq(
+          allocations.storageSpaceId,
+          storageSpaces.id,
+        ),
+      )
+      .innerJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .innerJoin(
+        bays,
+        eq(layers.bayId, bays.id),
+      )
+      .where(eq(bays.aisleId, aisleId));
+
+    return result?.total ?? "0";
+  };
+
+  const getAllocatedQuantityForBay = async (
+    bayId: string,
+    transaction?: DbTransaction,
+  ) => {
+    const executor = transaction ?? database;
+
+    const [result] = await executor
+      .select({
+        total: sql<string>`COALESCE(SUM(${allocations.quantity}), 0)`,
+      })
+      .from(allocations)
+      .innerJoin(
+        storageSpaces,
+        eq(
+          allocations.storageSpaceId,
+          storageSpaces.id,
+        ),
+      )
+      .innerJoin(
+        layers,
+        eq(storageSpaces.layerId, layers.id),
+      )
+      .where(eq(layers.bayId, bayId));
+
+    return result?.total ?? "0";
+  };
+
+  const getAllocatedQuantityForLayer = async (
+    layerId: string,
+    transaction?: DbTransaction,
+  ) => {
+    const executor = transaction ?? database;
+
+    const [result] = await executor
+      .select({
+        total: sql<string>`COALESCE(SUM(${allocations.quantity}), 0)`,
+      })
+      .from(allocations)
+      .innerJoin(
+        storageSpaces,
+        eq(
+          allocations.storageSpaceId,
+          storageSpaces.id,
+        ),
+      )
+      .where(eq(storageSpaces.layerId, layerId));
+
+    return result?.total ?? "0";
+  };
+
 
   return {
     getAllocatedQuantityForWarehouse,
+    getAllocatedQuantityForAisle,
+    getAllocatedQuantityForBay,
+    getAllocatedQuantityForLayer,
     findByItemAndStorageSpace,
     getAllocatedQuantityForStorageSpace,
     getAllocatedQuantityForItem,

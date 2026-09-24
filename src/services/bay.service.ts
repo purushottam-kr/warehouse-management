@@ -4,12 +4,17 @@ import {
   ConflictError,
   NotFoundError,
 } from "@/lib/errors/errors";
-import { isPostgresUniqueViolation } from "@/lib/errors/database";
 import { requireRole } from "@/lib/auth/authorization";
+import {
+  assertCanDeactivate,
+  assertWarehouseNotDeleted,
+  normalizeCode,
+  normalizeName,
+  throwConflictIfUniqueViolation,
+} from "@/services/helpers/common";
 import { createAisleRepository } from "@/repositories/aisle.repository";
 import { createBayRepository } from "@/repositories/bay.repository";
-import { createLayerRepository } from "@/repositories/layer.repository";
-import { createStorageSpaceRepository } from "@/repositories/storage-space.repository";
+import { createWarehouseRepository } from "@/repositories/warehouse.repository";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
 import type {
   CreateBayInput,
@@ -18,9 +23,8 @@ import type {
 
 const aisleRepository = createAisleRepository();
 const bayRepository = createBayRepository();
-const layerRepository = createLayerRepository();
-const storageSpaceRepository =
-  createStorageSpaceRepository();
+const warehouseRepository =
+  createWarehouseRepository();
 const allocationRepository =
   createAllocationRepository();
 
@@ -38,8 +42,14 @@ export const createBay = async (
     throw new NotFoundError("Aisle not found.");
   }
 
-  const name = input.name.trim();
-  const code = input.code.trim();
+  const warehouse = await warehouseRepository.findById(
+    aisle.warehouseId,
+  );
+
+  assertWarehouseNotDeleted(warehouse, "create a bay");
+
+  const name = normalizeName(input.name);
+  const code = normalizeCode(input.code);
 
   const existingBay = await bayRepository.findByCode(
     input.aisleId,
@@ -63,19 +73,12 @@ export const createBay = async (
     // The pre-check above improves the error response,
     // but PostgreSQL's UNIQUE constraint is the actual
     // concurrency protection.
-    if (
-      isPostgresUniqueViolation(
-        error,
-        BAY_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "BAY_CODE_ALREADY_EXISTS",
-        "A bay with this code already exists in this aisle.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      BAY_CODE_UNIQUE_CONSTRAINT,
+      "BAY_CODE_ALREADY_EXISTS",
+      "A bay with this code already exists in this aisle.",
+    );
   }
 };
 
@@ -107,8 +110,22 @@ export const updateBay = async (
 ) => {
   const existingBay = await getBayById(id);
 
+  const aisle = await aisleRepository.findById(
+    existingBay.aisleId,
+  );
+
+  if (!aisle) {
+    throw new NotFoundError("Aisle not found.");
+  }
+
+  const warehouse = await warehouseRepository.findById(
+    aisle.warehouseId,
+  );
+
+  assertWarehouseNotDeleted(warehouse, "update a bay");
+
   if (input.code !== undefined) {
-    const code = input.code.trim();
+    const code = normalizeCode(input.code);
 
     if (code !== existingBay.code) {
       const existingWithCode =
@@ -128,17 +145,34 @@ export const updateBay = async (
 
   const updateData: UpdateBayInput = {
     ...(input.name !== undefined && {
-      name: input.name.trim(),
+      name: normalizeName(input.name),
     }),
 
     ...(input.code !== undefined && {
-      code: input.code.trim(),
+      code: normalizeCode(input.code),
     }),
 
     ...(input.status !== undefined && {
       status: input.status,
     }),
   };
+
+  if (
+    input.status === "INACTIVE" &&
+    existingBay.status !== "INACTIVE"
+  ) {
+    const allocatedQuantity =
+      await allocationRepository.getAllocatedQuantityForBay(
+        id,
+      );
+
+    assertCanDeactivate(
+      input.status,
+      allocatedQuantity,
+      "BAY_HAS_INVENTORY",
+      "a bay",
+    );
+  }
 
   try {
     const updatedBay = await bayRepository.update(
@@ -152,54 +186,34 @@ export const updateBay = async (
 
     return updatedBay;
   } catch (error) {
-    if (
-      isPostgresUniqueViolation(
-        error,
-        BAY_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "BAY_CODE_ALREADY_EXISTS",
-        "A bay with this code already exists in this aisle.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      BAY_CODE_UNIQUE_CONSTRAINT,
+      "BAY_CODE_ALREADY_EXISTS",
+      "A bay with this code already exists in this aisle.",
+    );
   }
 };
 
 /*
- * Recursive deletion guard: a bay cannot be removed
- * while any descendant layer -> storage space holds
- * allocated inventory.
+ * Single-query deletion guard: sums all allocations under
+ * this bay (layer -> storage space) in one aggregate.
  */
 export const deleteBay = async (id: string) => {
   await requireRole("ADMIN");
 
   const bay = await getBayById(id);
 
-  const layers =
-    await layerRepository.findManyByBayId(bay.id);
+  const allocatedQuantity =
+    await allocationRepository.getAllocatedQuantityForBay(
+      bay.id,
+    );
 
-  for (const layer of layers) {
-    const spaces =
-      await storageSpaceRepository.findManyByLayerId(
-        layer.id,
-      );
-
-    for (const space of spaces) {
-      const allocatedQuantity =
-        await allocationRepository.getAllocatedQuantityForStorageSpace(
-          space.id,
-        );
-
-      if (Number(allocatedQuantity) > 0) {
-        throw new ConflictError(
-          "BAY_HAS_INVENTORY",
-          "Cannot delete a bay that contains inventory.",
-        );
-      }
-    }
+  if (Number(allocatedQuantity) > 0) {
+    throw new ConflictError(
+      "BAY_HAS_INVENTORY",
+      "Cannot delete a bay that contains inventory.",
+    );
   }
 
   const deletedBay = await bayRepository.remove(id);

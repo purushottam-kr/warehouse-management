@@ -4,12 +4,15 @@ import {
   ConflictError,
   NotFoundError,
 } from "@/lib/errors/errors";
-import { isPostgresUniqueViolation } from "@/lib/errors/database";
 import { requireRole } from "@/lib/auth/authorization";
+import {
+  assertCanDeactivate,
+  assertWarehouseNotDeleted,
+  normalizeCode,
+  normalizeName,
+  throwConflictIfUniqueViolation,
+} from "@/services/helpers/common";
 import { createAisleRepository } from "@/repositories/aisle.repository";
-import { createBayRepository } from "@/repositories/bay.repository";
-import { createLayerRepository } from "@/repositories/layer.repository";
-import { createStorageSpaceRepository } from "@/repositories/storage-space.repository";
 import { createWarehouseRepository } from "@/repositories/warehouse.repository";
 import { createAllocationRepository } from "@/repositories/allocation.repository";
 import type {
@@ -18,10 +21,6 @@ import type {
 } from "@/types/aisle";
 
 const aisleRepository = createAisleRepository();
-const bayRepository = createBayRepository();
-const layerRepository = createLayerRepository();
-const storageSpaceRepository =
-  createStorageSpaceRepository();
 const warehouseRepository =
   createWarehouseRepository();
 const allocationRepository =
@@ -37,19 +36,10 @@ export const createAisle = async (
     input.warehouseId,
   );
 
-  if (!warehouse) {
-    throw new NotFoundError("Warehouse not found.");
-  }
+  assertWarehouseNotDeleted(warehouse, "create an aisle");
 
-  if (warehouse.deletedAt !== null) {
-    throw new ConflictError(
-      "WAREHOUSE_DELETED",
-      "Cannot create an aisle in a deleted warehouse.",
-    );
-  }
-
-  const name = input.name.trim();
-  const code = input.code.trim();
+  const name = normalizeName(input.name);
+  const code = normalizeCode(input.code);
 
   const existingAisle =
     await aisleRepository.findByCode(
@@ -74,19 +64,12 @@ export const createAisle = async (
     // The pre-check above improves the error response,
     // but PostgreSQL's UNIQUE constraint is the actual
     // concurrency protection.
-    if (
-      isPostgresUniqueViolation(
-        error,
-        AISLE_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "AISLE_CODE_ALREADY_EXISTS",
-        "An aisle with this code already exists in this warehouse.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      AISLE_CODE_UNIQUE_CONSTRAINT,
+      "AISLE_CODE_ALREADY_EXISTS",
+      "An aisle with this code already exists in this warehouse.",
+    );
   }
 };
 
@@ -121,8 +104,14 @@ export const updateAisle = async (
 ) => {
   const existingAisle = await getAisleById(id);
 
+  const warehouse = await warehouseRepository.findById(
+    existingAisle.warehouseId,
+  );
+
+  assertWarehouseNotDeleted(warehouse, "update an aisle");
+
   if (input.code !== undefined) {
-    const code = input.code.trim();
+    const code = normalizeCode(input.code);
 
     if (code !== existingAisle.code) {
       const existingWithCode =
@@ -142,17 +131,34 @@ export const updateAisle = async (
 
   const updateData: UpdateAisleInput = {
     ...(input.name !== undefined && {
-      name: input.name.trim(),
+      name: normalizeName(input.name),
     }),
 
     ...(input.code !== undefined && {
-      code: input.code.trim(),
+      code: normalizeCode(input.code),
     }),
 
     ...(input.status !== undefined && {
       status: input.status,
     }),
   };
+
+  if (
+    input.status === "INACTIVE" &&
+    existingAisle.status !== "INACTIVE"
+  ) {
+    const allocatedQuantity =
+      await allocationRepository.getAllocatedQuantityForAisle(
+        id,
+      );
+
+    assertCanDeactivate(
+      input.status,
+      allocatedQuantity,
+      "AISLE_HAS_INVENTORY",
+      "an aisle",
+    );
+  }
 
   try {
     const updatedAisle = await aisleRepository.update(
@@ -166,62 +172,36 @@ export const updateAisle = async (
 
     return updatedAisle;
   } catch (error) {
-    if (
-      isPostgresUniqueViolation(
-        error,
-        AISLE_CODE_UNIQUE_CONSTRAINT,
-      )
-    ) {
-      throw new ConflictError(
-        "AISLE_CODE_ALREADY_EXISTS",
-        "An aisle with this code already exists in this warehouse.",
-      );
-    }
-
-    throw error;
+    throwConflictIfUniqueViolation(
+      error,
+      AISLE_CODE_UNIQUE_CONSTRAINT,
+      "AISLE_CODE_ALREADY_EXISTS",
+      "An aisle with this code already exists in this warehouse.",
+    );
   }
 };
 
 /*
- * Recursive deletion guard: an aisle cannot be removed
- * while any descendant bay -> layer -> storage space
- * holds allocated inventory. Same rule as
- * "warehouse cannot be deleted while it contains
- * inventory," walked down through the new levels.
+ * Single-query deletion guard: sums all allocations under
+ * this aisle (bay -> layer -> space) in one aggregate.
+ * Same rule as "warehouse cannot be deleted while it
+ * contains inventory," scoped to the subtree.
  */
 export const deleteAisle = async (id: string) => {
   await requireRole("ADMIN");
 
   const aisle = await getAisleById(id);
 
-  const bays = await bayRepository.findManyByAisleId(
-    aisle.id,
-  );
+  const allocatedQuantity =
+    await allocationRepository.getAllocatedQuantityForAisle(
+      aisle.id,
+    );
 
-  for (const bay of bays) {
-    const layers =
-      await layerRepository.findManyByBayId(bay.id);
-
-    for (const layer of layers) {
-      const spaces =
-        await storageSpaceRepository.findManyByLayerId(
-          layer.id,
-        );
-
-      for (const space of spaces) {
-        const allocatedQuantity =
-          await allocationRepository.getAllocatedQuantityForStorageSpace(
-            space.id,
-          );
-
-        if (Number(allocatedQuantity) > 0) {
-          throw new ConflictError(
-            "AISLE_HAS_INVENTORY",
-            "Cannot delete an aisle that contains inventory.",
-          );
-        }
-      }
-    }
+  if (Number(allocatedQuantity) > 0) {
+    throw new ConflictError(
+      "AISLE_HAS_INVENTORY",
+      "Cannot delete an aisle that contains inventory.",
+    );
   }
 
   const deletedAisle = await aisleRepository.remove(id);
